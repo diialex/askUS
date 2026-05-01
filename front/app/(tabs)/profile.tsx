@@ -12,12 +12,11 @@ import {
 import { useState } from 'react';
 import { useAuth } from '@context/AuthContext';
 import { profileApi } from '@api/profile';
-import { questionsApi } from '@api/questions';
 import { useImagePicker } from '@hooks/useImagePicker';
 import Toast from 'react-native-toast-message';
 
 export default function ProfileScreen() {
-  const { user, logout, refreshUser } = useAuth();
+  const { user, logout, refreshUser, updateUserLocally } = useAuth();
   const { showPickerOptions, isLoading: isPickerLoading } = useImagePicker();
 
   const [name, setName] = useState(user?.name ?? '');
@@ -28,11 +27,16 @@ export default function ProfileScreen() {
     if (!name.trim()) return;
     setIsSaving(true);
     try {
-      await profileApi.updateProfile({ name: name.trim() });
-      await refreshUser();
-      Toast.show({ type: 'success', text1: 'Perfil actualizado' });
-    } catch {
-      Toast.show({ type: 'error', text1: 'Error al guardar', text2: 'Inténtalo de nuevo' });
+      const { data } = await profileApi.updateProfile({ name: name.trim() });
+      // Actualiza el usuario en contexto con la respuesta del servidor
+      updateUserLocally({ name: data.data.name });
+      Toast.show({ type: 'success', text1: '✅ Perfil actualizado' });
+    } catch (err: unknown) {
+      Toast.show({
+        type: 'error',
+        text1: 'Error al guardar',
+        text2: (err as { message?: string })?.message ?? 'Inténtalo de nuevo',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -43,14 +47,16 @@ export default function ProfileScreen() {
       if (!image) return;
       setIsUploadingAvatar(true);
       try {
-        const { data } = await profileApi.uploadAvatar(
+        const { data: uploadData } = await profileApi.uploadAvatar(
           image.uri,
           image.fileName,
           image.mimeType,
         );
-        await profileApi.updateProfile({ avatar_url: data.data.url });
-        await refreshUser();
-        Toast.show({ type: 'success', text1: 'Foto actualizada' });
+        const { data: profileData } = await profileApi.updateProfile({
+          avatar_url: uploadData.data.url,
+        });
+        updateUserLocally({ avatar_url: profileData.data.avatar_url ?? uploadData.data.url });
+        Toast.show({ type: 'success', text1: '📷 Foto actualizada' });
       } catch {
         Toast.show({ type: 'error', text1: 'Error al subir la imagen' });
       } finally {

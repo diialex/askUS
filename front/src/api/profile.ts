@@ -9,27 +9,44 @@ import type {
 } from '@/types';
 
 export const profileApi = {
-  /** Obtener perfil del usuario autenticado */
+  /**
+   * GET /auth/me
+   * Devuelve el usuario autenticado.
+   * Disponible ✅
+   */
   getMe: () =>
     apiClient.get<ApiResponse<User>>('/auth/me'),
 
-  /** Actualizar datos del perfil */
+  /**
+   * PATCH /auth/me
+   * Actualiza nombre / avatar_url del usuario.
+   * TODO: pendiente de implementar en el backend
+   */
   updateProfile: (data: UpdateProfileRequest) =>
-    apiClient.put<ApiResponse<User>>('/auth/me', data),
+    apiClient.patch<ApiResponse<User>>('/auth/me', data),
 
-  /** Cambiar contraseña */
+  /**
+   * POST /auth/me/change-password
+   * TODO: pendiente de implementar en el backend
+   */
   changePassword: (data: ChangePasswordRequest) =>
-    apiClient.post<ApiResponse<null>>('/profile/change-password', data),
+    apiClient.post<ApiResponse<null>>('/auth/me/change-password', data),
 
-  /** Registrar push token para notificaciones */
+  /**
+   * POST /auth/me/push-token
+   * TODO: pendiente de implementar en el backend
+   */
   registerPushToken: (data: PushTokenRequest) =>
-    apiClient.post<ApiResponse<null>>('/profile/push-token', data),
+    apiClient.post<ApiResponse<null>>('/auth/me/push-token', data),
 
-  /** Subir avatar — envía multipart/form-data */
+  /**
+   * POST /auth/me/avatar — multipart/form-data
+   * TODO: pendiente de implementar en el backend
+   */
   uploadAvatar: (uri: string, fileName: string, mimeType: string) => {
     const form = new FormData();
     form.append('file', { uri, name: fileName, type: mimeType } as unknown as Blob);
-    return apiClient.post<ApiResponse<UploadResponse>>('/profile/avatar', form, {
+    return apiClient.post<ApiResponse<UploadResponse>>('/auth/me/avatar', form, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },

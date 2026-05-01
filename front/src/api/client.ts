@@ -5,8 +5,6 @@ import type { ApiError } from '@/types';
 
 // ─── Instancia principal ──────────────────────────────────────────────────────
 
-const baseURL = 'http://192.168.1.47:8000';
-
 export const apiClient = axios.create({
   baseURL: API_URL,
   timeout: API_TIMEOUT,
@@ -84,8 +82,14 @@ apiClient.interceptors.response.use(
           refresh_token: refreshToken,
         });
 
-        const newToken: string = data.tokens?.access_token ?? data.access_token;
+        // Backend responde: { success, data: { user, tokens: { access_token, refresh_token } } }
+        const newToken: string = data.data?.tokens?.access_token;
+        const newRefresh: string | undefined = data.data?.tokens?.refresh_token;
+
         await secureStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, newToken);
+        if (newRefresh) {
+          await secureStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefresh);
+        }
 
         apiClient.defaults.headers.common.Authorization = `Bearer ${newToken}`;
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -106,18 +110,32 @@ apiClient.interceptors.response.use(
   },
 );
 
-// ─── Helper: normaliza errores de la API ──────────────────────────────────────
+// ─── Helper: normaliza errores de FastAPI ─────────────────────────────────────
+//
+// FastAPI devuelve:
+//   { detail: "mensaje" }                         ← HTTPException estándar
+//   { detail: [{ loc, msg, type }] }              ← validación Pydantic
+//   { success: false, message: "..." }            ← errores custom del proyecto
 
 function buildApiError(error: AxiosError): ApiError {
-  const responseData = error.response?.data as Record<string, unknown> | undefined;
-  return {
-    message:
-      (responseData?.message as string) ??
-      error.message ??
-      'Error desconocido',
-    errors: responseData?.errors as Record<string, string[]> | undefined,
-    status: error.response?.status,
-  };
+  const body = error.response?.data as Record<string, unknown> | undefined;
+
+  let message = 'Error desconocido';
+
+  if (typeof body?.detail === 'string') {
+    message = body.detail;
+  } else if (Array.isArray(body?.detail)) {
+    const first = (body.detail as Array<{ msg?: string }>)[0];
+    message = first?.msg ?? message;
+  } else if (typeof body?.message === 'string') {
+    message = body.message;
+  } else if (error.message === 'Network Error') {
+    message = 'No se pudo conectar con el servidor. Comprueba tu conexión.';
+  } else if (error.message) {
+    message = error.message;
+  }
+
+  return { message, status: error.response?.status };
 }
 
 export default apiClient;

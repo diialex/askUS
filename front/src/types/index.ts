@@ -132,9 +132,12 @@ export interface PaginatedResponse<T> {
 }
 
 export interface ApiError {
+  /** Mensaje normalizado para mostrar al usuario */
   message: string;
-  errors?: Record<string, string[]>;
+  /** HTTP status code */
   status?: number;
+  /** Campo detail tal como lo devuelve FastAPI (string o array de errores Pydantic) */
+  detail?: string;
 }
 
 // ─── Notificaciones ───────────────────────────────────────────────────────────

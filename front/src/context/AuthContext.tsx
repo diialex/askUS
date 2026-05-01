@@ -27,6 +27,8 @@ interface AuthContextValue extends AuthState {
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  /** Actualiza el usuario en memoria sin hacer una llamada a la API */
+  updateUserLocally: (partial: Partial<User>) => void;
 }
 
 // ─── Contexto ─────────────────────────────────────────────────────────────────
@@ -71,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        // GET /auth/me → ApiResponse<UserResponse> → response.data = { success, data: User, message }
         const { data } = await profileApi.getMe();
         setState({ user: data.data, isLoading: false, isAuthenticated: true });
       } catch (error) {
@@ -89,12 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    // Si está autenticado y está en auth, redirige a tabs
     if (state.isAuthenticated && inAuthGroup) {
+      // Autenticado en pantalla de auth → va a los tabs
       router.replace('/(tabs)');
+    } else if (!state.isAuthenticated && !inAuthGroup) {
+      // No autenticado intentando acceder a tabs → va al login
+      router.replace('/(auth)/login');
     }
-    // Si no está autenticado pero está en auth, permite que se quede en login/register
-    // Si no está autenticado pero quiere acceder a tabs, lo permite (modo demo/offline)
   }, [state.isAuthenticated, state.isLoading, segments]);
 
   // ── Acciones ───────────────────────────────────────────────────────────────
@@ -129,8 +133,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, user: data.data }));
   }, []);
 
+  const updateUserLocally = useCallback((partial: Partial<User>) => {
+    setState((prev) => ({
+      ...prev,
+      user: prev.user ? { ...prev.user, ...partial } : prev.user,
+    }));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout, refreshUser }}>
+    <AuthContext.Provider
+      value={{ ...state, login, register, logout, refreshUser, updateUserLocally }}
+    >
       {children}
     </AuthContext.Provider>
   );
