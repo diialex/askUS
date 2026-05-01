@@ -76,41 +76,68 @@ export interface GroupMember {
   joined_at: string;
 }
 
-// ─── Preguntas ────────────────────────────────────────────────────────────────
+// ─── Preguntas (pool global) ──────────────────────────────────────────────────
 
+export type QuestionCategory =
+  | 'amigos'
+  | 'trabajo'
+  | 'pareja'
+  | 'familia'
+  | 'general';
+
+/** Una pregunta del pool global (sin grupo) */
 export interface Question {
   id: string;
-  group_id: string;
-  author: Pick<User, 'id' | 'name' | 'avatar_url'>;
+  category: QuestionCategory;
   text: string;
   image_url?: string;
-  answer_count: number;
-  my_answer?: Answer;
-  status: 'open' | 'closed';
+  is_active: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export interface CreateQuestionRequest {
-  group_id: string;
   text: string;
+  category?: QuestionCategory;
   image_url?: string;
 }
+
+// ─── Preguntas de grupo ───────────────────────────────────────────────────────
+
+/** Una pregunta del pool asignada a un grupo concreto */
+export interface GroupQuestion {
+  id: string;
+  group_uuid: string;
+  question: Question;
+  status: 'active' | 'closed';
+  answer_count: number;
+  my_answer?: Answer;
+  sent_at: string;
+  closed_at?: string;
+  created_at: string;
+}
+
+export interface SendQuestionToGroupRequest {
+  /** Si se omite, se elige una aleatoria del pool */
+  question_uuid?: string;
+  /** Filtra la elección aleatoria por categoría */
+  category?: QuestionCategory;
+}
+
+// ─── Respuestas ───────────────────────────────────────────────────────────────
 
 export interface Answer {
   id: string;
-  question_id: string;
+  group_question_uuid: string;
   author: Pick<User, 'id' | 'name' | 'avatar_url'>;
-  text: string;
-  image_url?: string;
+  /** UUID del miembro del grupo elegido */
+  selected_user_uuid: string;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export interface CreateAnswerRequest {
-  question_id: string;
-  text: string;
-  image_url?: string;
+  group_question_uuid: string;
+  selected_user_uuid: string;
 }
 
 // ─── Respuestas API ────────────────────────────────────────────────────────────

@@ -1,57 +1,100 @@
 import apiClient from './client';
 import type {
   Question,
+  GroupQuestion,
   Answer,
   CreateQuestionRequest,
+  SendQuestionToGroupRequest,
   CreateAnswerRequest,
-  UploadResponse,
+  QuestionCategory,
   ApiResponse,
   PaginatedResponse,
 } from '@/types';
 
-export const questionsApi = {
-  /** Preguntas de un grupo */
-  getGroupQuestions: (groupId: string, page = 1) =>
-    apiClient.get<PaginatedResponse<Question>>(`/groups/${groupId}/questions`, {
-      params: { page },
+// ─── Pool de preguntas (admin) ────────────────────────────────────────────────
+
+export const poolApi = {
+  /** Lista las preguntas del pool global */
+  list: (params?: { category?: QuestionCategory; active_only?: boolean; page?: number }) =>
+    apiClient.get<PaginatedResponse<Question> & { success: boolean }>('/admin/questions', {
+      params,
     }),
 
-  /** Detalle de una pregunta */
-  getQuestion: (questionId: string) =>
-    apiClient.get<ApiResponse<Question>>(`/questions/${questionId}`),
+  /** Añade una pregunta al pool */
+  create: (data: CreateQuestionRequest) =>
+    apiClient.post<ApiResponse<Question>>('/admin/questions', data),
 
-  /** Crear pregunta */
-  createQuestion: (data: CreateQuestionRequest) =>
-    apiClient.post<ApiResponse<Question>>('/questions', data),
+  /** Actualiza una pregunta del pool */
+  update: (questionId: string, data: Partial<CreateQuestionRequest> & { is_active?: boolean }) =>
+    apiClient.patch<ApiResponse<Question>>(`/admin/questions/${questionId}`, data),
 
-  /** Eliminar pregunta */
-  deleteQuestion: (questionId: string) =>
-    apiClient.delete<ApiResponse<null>>(`/questions/${questionId}`),
+  /** Elimina una pregunta del pool */
+  delete: (questionId: string) =>
+    apiClient.delete<ApiResponse<null>>(`/admin/questions/${questionId}`),
+};
 
-  /** Respuestas de una pregunta */
-  getAnswers: (questionId: string, page = 1) =>
-    apiClient.get<PaginatedResponse<Answer>>(`/questions/${questionId}/answers`, {
-      params: { page },
-    }),
+// ─── Preguntas de grupo ───────────────────────────────────────────────────────
 
-  /** Responder una pregunta */
-  createAnswer: (data: CreateAnswerRequest) =>
+export const groupQuestionsApi = {
+  /**
+   * Envía la siguiente pregunta a un grupo.
+   * Si no se especifica question_uuid se elige una aleatoria del pool.
+   */
+  sendNext: (groupId: string, data: SendQuestionToGroupRequest = {}) =>
+    apiClient.post<ApiResponse<GroupQuestion>>(
+      `/groups/${groupId}/questions/next`,
+      data,
+    ),
+
+  /** Historial de preguntas enviadas a un grupo */
+  list: (groupId: string, page = 1) =>
+    apiClient.get<PaginatedResponse<GroupQuestion> & { success: boolean }>(
+      `/groups/${groupId}/questions`,
+      { params: { page } },
+    ),
+
+  /** Pregunta activa actual de un grupo */
+  getActive: (groupId: string) =>
+    apiClient.get<ApiResponse<GroupQuestion>>(
+      `/groups/${groupId}/questions/active`,
+    ),
+
+  /** Detalle de una group question */
+  get: (groupQuestionId: string) =>
+    apiClient.get<ApiResponse<GroupQuestion>>(`/group-questions/${groupQuestionId}`),
+
+  /** Cierra la pregunta (solo el dueño del grupo) */
+  close: (groupQuestionId: string) =>
+    apiClient.post<ApiResponse<GroupQuestion>>(
+      `/group-questions/${groupQuestionId}/close`,
+    ),
+};
+
+// ─── Respuestas ───────────────────────────────────────────────────────────────
+
+export const answersApi = {
+  /** Respuestas de una group question */
+  list: (groupQuestionId: string, page = 1) =>
+    apiClient.get<PaginatedResponse<Answer> & { success: boolean }>(
+      `/group-questions/${groupQuestionId}/answers`,
+      { params: { page } },
+    ),
+
+  /** Enviar respuesta */
+  create: (data: CreateAnswerRequest) =>
     apiClient.post<ApiResponse<Answer>>('/answers', data),
 
-  /** Actualizar respuesta */
-  updateAnswer: (answerId: string, text: string) =>
-    apiClient.put<ApiResponse<Answer>>(`/answers/${answerId}`, { text }),
-
-  /** Eliminar respuesta */
-  deleteAnswer: (answerId: string) =>
+  /** Eliminar propia respuesta */
+  delete: (answerId: string) =>
     apiClient.delete<ApiResponse<null>>(`/answers/${answerId}`),
+};
 
-  /** Subir imagen adjunta a pregunta/respuesta */
-  uploadImage: (uri: string, fileName: string, mimeType: string) => {
-    const form = new FormData();
-    form.append('file', { uri, name: fileName, type: mimeType } as unknown as Blob);
-    return apiClient.post<ApiResponse<UploadResponse>>('/uploads/image', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
+// ─── Export unificado (retrocompatibilidad) ───────────────────────────────────
+
+export const questionsApi = {
+  ...poolApi,
+  ...groupQuestionsApi,
+  listAnswers: answersApi.list,
+  createAnswer: answersApi.create,
+  deleteAnswer: answersApi.delete,
 };
