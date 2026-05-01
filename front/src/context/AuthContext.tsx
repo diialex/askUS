@@ -91,13 +91,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (state.isLoading) return;
 
     const inAuthGroup = segments[0] === '(auth)';
+    const inTabsGroup = segments[0] === '(tabs)';
 
     if (state.isAuthenticated && inAuthGroup) {
       // Autenticado en pantalla de auth → va a los tabs
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/groups');
     } else if (!state.isAuthenticated && !inAuthGroup) {
       // No autenticado intentando acceder a tabs → va al login
       router.replace('/(auth)/login');
+    } else if (!inAuthGroup && !inTabsGroup && state.isLoading === false) {
+      // Sin ruta clara: redirige al login si no está autenticado
+      if (!state.isAuthenticated) {
+        router.replace('/(auth)/login');
+      }
     }
   }, [state.isAuthenticated, state.isLoading, segments]);
 
@@ -111,10 +117,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(async (data: RegisterRequest) => {
-    const response = await authApi.register(data);
-    const { user, tokens } = response.data.data;
-    await saveTokens(tokens);
-    setState({ user, isLoading: false, isAuthenticated: true });
+    try {
+      console.log('📝 Registrando con:', data);
+      const response = await authApi.register(data);
+      console.log('✅ Respuesta completa del servidor:', response);
+      console.log('✅ response.data:', response.data);
+      console.log('✅ response.data.data:', response.data.data);
+      
+      const { user, tokens } = response.data.data;
+      console.log('✅ Usuario:', user);
+      console.log('✅ Tokens:', tokens);
+      
+      await saveTokens(tokens);
+      console.log('✅ Tokens guardados');
+      
+      setState({ user, isLoading: false, isAuthenticated: true });
+      console.log('✅ Estado actualizado, autenticado');
+    } catch (error) {
+      console.error('❌ Error en registro:', error);
+      throw error;
+    }
   }, []);
 
   const logout = useCallback(async () => {

@@ -7,6 +7,10 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
 } from 'react-native';
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
@@ -75,6 +79,100 @@ function GroupCard({
 
 // ─── Pantalla ─────────────────────────────────────────────────────────────────
 
+// ─── Modal Crear Grupo ────────────────────────────────────────────────────────
+
+function CreateGroupModal({
+  visible,
+  onClose,
+  onCreated,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onCreated: (group: Group) => void;
+}) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim()) {
+      Toast.show({ type: 'error', text1: 'El nombre es obligatorio' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { data } = await groupsApi.createGroup({
+        name: name.trim(),
+        description: description.trim() || undefined,
+      });
+      onCreated(data.data);
+      setName('');
+      setDescription('');
+      onClose();
+      Toast.show({ type: 'success', text1: '¡Grupo creado!' });
+    } catch {
+      Toast.show({ type: 'error', text1: 'No se pudo crear el grupo' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <Pressable style={modalStyles.backdrop} onPress={onClose} />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={modalStyles.sheet}
+      >
+        <View style={modalStyles.handle} />
+        <Text style={modalStyles.title}>Nuevo grupo</Text>
+
+        <Text style={modalStyles.label}>Nombre *</Text>
+        <TextInput
+          style={modalStyles.input}
+          placeholder="Ej. Matemáticas 2024"
+          placeholderTextColor="#9CA3AF"
+          value={name}
+          onChangeText={setName}
+          maxLength={80}
+          autoFocus
+        />
+
+        <Text style={modalStyles.label}>Descripción (opcional)</Text>
+        <TextInput
+          style={[modalStyles.input, modalStyles.textarea]}
+          placeholder="¿De qué trata el grupo?"
+          placeholderTextColor="#9CA3AF"
+          value={description}
+          onChangeText={setDescription}
+          maxLength={300}
+          multiline
+          numberOfLines={3}
+        />
+
+        <View style={modalStyles.actions}>
+          <TouchableOpacity style={modalStyles.cancelBtn} onPress={onClose} disabled={isSubmitting}>
+            <Text style={modalStyles.cancelText}>Cancelar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[modalStyles.createBtn, isSubmitting && { opacity: 0.6 }]}
+            onPress={handleCreate}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={modalStyles.createText}>Crear</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+// ─── Pantalla ─────────────────────────────────────────────────────────────────
+
 export default function GroupsScreen() {
   const router = useRouter();
   const { isOffline } = useOffline();
@@ -82,6 +180,7 @@ export default function GroupsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
 
   const loadGroups = useCallback(async () => {
     if (isOffline) {
@@ -160,6 +259,10 @@ export default function GroupsScreen() {
     router.push(`/(tabs)/groups/${groupId}`);
   };
 
+  const handleGroupCreated = (group: Group) => {
+    setGroups((prev) => [{ ...group, is_member: true }, ...prev]);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -208,9 +311,22 @@ export default function GroupsScreen() {
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyText}>No hay grupos disponibles</Text>
+            <Text style={styles.emptyIcon}>👥</Text>
+            <Text style={styles.emptyText}>Aún no hay grupos</Text>
+            <Text style={styles.emptyHint}>Crea uno con el botón +</Text>
           </View>
         }
+      />
+
+      {/* FAB */}
+      <TouchableOpacity style={styles.fab} onPress={() => setShowCreate(true)} activeOpacity={0.8}>
+        <Text style={styles.fabIcon}>+</Text>
+      </TouchableOpacity>
+
+      <CreateGroupModal
+        visible={showCreate}
+        onClose={() => setShowCreate(false)}
+        onCreated={handleGroupCreated}
       />
     </View>
   );
@@ -270,6 +386,78 @@ const styles = StyleSheet.create({
   hintText: { color: '#6366F1', fontSize: 12, fontWeight: '500' },
   offlineBanner: { backgroundColor: '#FEF3C7', padding: 10, alignItems: 'center' },
   offlineText: { color: '#92400E', fontSize: 13 },
-  empty: { alignItems: 'center', marginTop: 60 },
-  emptyText: { color: '#9CA3AF', fontSize: 16 },
+  empty: { alignItems: 'center', marginTop: 80, gap: 6 },
+  emptyIcon: { fontSize: 48 },
+  emptyText: { color: '#374151', fontSize: 17, fontWeight: '600' },
+  emptyHint: { color: '#9CA3AF', fontSize: 14 },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#4F46E5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#4F46E5',
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  fabIcon: { color: '#fff', fontSize: 28, lineHeight: 32, fontWeight: '300' },
+});
+
+const modalStyles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 36,
+    gap: 8,
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E5E7EB',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  title: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  label: { fontSize: 13, fontWeight: '600', color: '#6B7280', marginTop: 8 },
+  input: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#111827',
+  },
+  textarea: { minHeight: 80, textAlignVertical: 'top' },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+  },
+  cancelText: { color: '#6B7280', fontWeight: '600', fontSize: 15 },
+  createBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#4F46E5',
+    alignItems: 'center',
+  },
+  createText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });
