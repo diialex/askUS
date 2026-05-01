@@ -21,7 +21,7 @@ class User(SQLModel, table=True):
     # Primary key
     id: Optional[int] = Field(default=None, primary_key=True)
     uuid: str = Field(
-        default_factory=uuid4,
+        default_factory=lambda: str(uuid4()),
         index=True,
         description="Unique identifier UUID4",
     )
