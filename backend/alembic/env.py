@@ -2,6 +2,7 @@ import asyncio
 import sqlmodel
 
 from app.models.user import User
+from app.models.group import Group, GroupMember  # noqa: F401 — needed for autogenerate
 from app.core.config import settings
 from logging.config import fileConfig
 
