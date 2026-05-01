@@ -7,17 +7,18 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import jwt
-from passlib.context import CryptContext
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHash
 
 from app.core.config import settings
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing with Argon2
+hasher = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
     """
-    Hash a password using bcrypt.
+    Hash a password using Argon2.
 
     Args:
         password: Plain text password.
@@ -25,7 +26,7 @@ def hash_password(password: str) -> str:
     Returns:
         Hashed password string.
     """
-    return pwd_context.hash(password)
+    return hasher.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -39,7 +40,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         True if password matches, False otherwise.
     """
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        hasher.verify(hashed_password, plain_password)
+        return True
+    except InvalidHash:
+        return False
 
 
 def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
