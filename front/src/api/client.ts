@@ -5,6 +5,8 @@ import type { ApiError } from '@/types';
 
 // ─── Instancia principal ──────────────────────────────────────────────────────
 
+const baseURL = 'http://192.168.1.47:8000';
+
 export const apiClient = axios.create({
   baseURL: API_URL,
   timeout: API_TIMEOUT,

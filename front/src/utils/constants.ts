@@ -1,4 +1,4 @@
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://tu-api.com/api/v1';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000/api/v1';
 export const API_TIMEOUT = Number(process.env.EXPO_PUBLIC_API_TIMEOUT ?? 10000);
 
 export const STORAGE_KEYS = {

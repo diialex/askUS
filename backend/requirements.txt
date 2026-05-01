@@ -1,0 +1,30 @@
+# FastAPI and server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# SQLModel and database
+sqlmodel>=0.0.14
+asyncpg>=0.29.0
+alembic>=1.13.0
+
+# Pydantic
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Password hashing
+passlib[bcrypt]>=1.7.4
+
+# JWT
+PyJWT>=2.8.0
+
+# FastAPI extra
+python-multipart>=0.0.6
+
+# Type annotations
+typing-extensions>=4.9.0
+
+# Email validation
+email-validator>=2.1.0
+
+# Python-dotenv for loading .env files
+python-dotenv>=1.0.0

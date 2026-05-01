@@ -11,11 +11,11 @@ import type {
 export const profileApi = {
   /** Obtener perfil del usuario autenticado */
   getMe: () =>
-    apiClient.get<ApiResponse<User>>('/profile/me'),
+    apiClient.get<ApiResponse<User>>('/auth/me'),
 
   /** Actualizar datos del perfil */
   updateProfile: (data: UpdateProfileRequest) =>
-    apiClient.put<ApiResponse<User>>('/profile/me', data),
+    apiClient.put<ApiResponse<User>>('/auth/me', data),
 
   /** Cambiar contraseña */
   changePassword: (data: ChangePasswordRequest) =>
