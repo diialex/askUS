@@ -66,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const token = await secureStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         if (!token) {
+          // Sin token: permite navegación en modo demo/offline
           setState({ user: null, isLoading: false, isAuthenticated: false });
           return;
         }
@@ -75,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('Auth initialization error:', error);
         await clearTokens();
+        // En caso de error, permite navegar sin autenticación
         setState({ user: null, isLoading: false, isAuthenticated: false });
       }
     })();
@@ -87,11 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if (!state.isAuthenticated && !inAuthGroup) {
-      router.replace('/(auth)/login');
-    } else if (state.isAuthenticated && inAuthGroup) {
+    // Si está autenticado y está en auth, redirige a tabs
+    if (state.isAuthenticated && inAuthGroup) {
       router.replace('/(tabs)');
     }
+    // Si no está autenticado pero está en auth, permite que se quede en login/register
+    // Si no está autenticado pero quiere acceder a tabs, lo permite (modo demo/offline)
   }, [state.isAuthenticated, state.isLoading, segments]);
 
   // ── Acciones ───────────────────────────────────────────────────────────────

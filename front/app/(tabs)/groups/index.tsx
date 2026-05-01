@@ -9,6 +9,7 @@ import {
   TextInput,
 } from 'react-native';
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'expo-router';
 import { groupsApi } from '@api/groups';
 import { getCached, setCached } from '@store/cache';
 import { STORAGE_KEYS } from '@utils/constants';
@@ -22,46 +23,60 @@ function GroupCard({
   item,
   onJoin,
   onLeave,
+  onPress,
 }: {
   item: Group;
   onJoin: (id: string) => void;
   onLeave: (id: string) => void;
+  onPress: (id: string) => void;
 }) {
   return (
-    <View style={styles.card}>
-      <View style={styles.cardTop}>
-        <View style={styles.groupIcon}>
-          <Text style={{ fontSize: 22 }}>👥</Text>
+    <TouchableOpacity
+      onPress={() => item.is_member && onPress(item.id)}
+      activeOpacity={item.is_member ? 0.7 : 1}
+    >
+      <View style={styles.card}>
+        <View style={styles.cardTop}>
+          <View style={styles.groupIcon}>
+            <Text style={{ fontSize: 22 }}>👥</Text>
+          </View>
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={styles.groupName}>{item.name}</Text>
+            {item.description ? (
+              <Text style={styles.groupDesc} numberOfLines={2}>
+                {item.description}
+              </Text>
+            ) : null}
+          </View>
         </View>
-        <View style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={styles.groupName}>{item.name}</Text>
-          {item.description ? (
-            <Text style={styles.groupDesc} numberOfLines={2}>
-              {item.description}
+        <View style={styles.cardBottom}>
+          <Text style={styles.memberCount}>👤 {item.member_count} miembros</Text>
+          <TouchableOpacity
+            style={[styles.joinBtn, item.is_member && styles.leaveBtn]}
+            onPress={(e) => {
+              e.stopPropagation();
+              item.is_member ? onLeave(item.id) : onJoin(item.id);
+            }}
+          >
+            <Text style={[styles.joinBtnText, item.is_member && styles.leaveBtnText]}>
+              {item.is_member ? 'Salir' : 'Unirse'}
             </Text>
-          ) : null}
+          </TouchableOpacity>
         </View>
+        {item.is_member && (
+          <View style={styles.hint}>
+            <Text style={styles.hintText}>Toca para ver preguntas →</Text>
+          </View>
+        )}
       </View>
-      <View style={styles.cardBottom}>
-        <Text style={styles.memberCount}>👤 {item.member_count} miembros</Text>
-        <TouchableOpacity
-          style={[styles.joinBtn, item.is_member && styles.leaveBtn]}
-          onPress={() =>
-            item.is_member ? onLeave(item.id) : onJoin(item.id)
-          }
-        >
-          <Text style={[styles.joinBtnText, item.is_member && styles.leaveBtnText]}>
-            {item.is_member ? 'Salir' : 'Unirse'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 // ─── Pantalla ─────────────────────────────────────────────────────────────────
 
 export default function GroupsScreen() {
+  const router = useRouter();
   const { isOffline } = useOffline();
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -141,6 +156,10 @@ export default function GroupsScreen() {
     }
   };
 
+  const handleSelectGroup = (groupId: string) => {
+    router.push(`/(tabs)/groups/${groupId}`);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.centered}>
@@ -169,13 +188,21 @@ export default function GroupsScreen() {
         data={groups}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <GroupCard item={item} onJoin={handleJoin} onLeave={handleLeave} />
+          <GroupCard
+            item={item}
+            onJoin={handleJoin}
+            onLeave={handleLeave}
+            onPress={handleSelectGroup}
+          />
         )}
         contentContainerStyle={styles.list}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
-            onRefresh={() => { setIsRefreshing(true); loadGroups(); }}
+            onRefresh={() => {
+              setIsRefreshing(true);
+              loadGroups();
+            }}
             colors={['#4F46E5']}
           />
         }
@@ -239,6 +266,8 @@ const styles = StyleSheet.create({
   leaveBtn: { backgroundColor: '#FEE2E2' },
   joinBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
   leaveBtnText: { color: '#DC2626' },
+  hint: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  hintText: { color: '#6366F1', fontSize: 12, fontWeight: '500' },
   offlineBanner: { backgroundColor: '#FEF3C7', padding: 10, alignItems: 'center' },
   offlineText: { color: '#92400E', fontSize: 13 },
   empty: { alignItems: 'center', marginTop: 60 },

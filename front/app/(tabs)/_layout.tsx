@@ -22,13 +22,6 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Preguntas',
-          tabBarIcon: ({ focused }) => <TabIcon icon="💬" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="groups"
         options={{
           title: 'Grupos',

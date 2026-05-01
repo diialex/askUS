@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useEffect, useState, useCallback } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useOffline } from '@hooks/useOffline';
 import { questionsApi } from '@api/questions';
 import { getCached, setCached } from '@store/cache';
@@ -48,39 +49,42 @@ function QuestionCard({ item }: { item: Question }) {
   );
 }
 
-// ─── Pantalla principal ───────────────────────────────────────────────────────
+// ─── Pantalla de preguntas del grupo ───────────────────────────────────────────
 
-export default function QuestionsScreen() {
+export default function GroupQuestionsScreen() {
+  const { groupId } = useLocalSearchParams<{ groupId: string }>();
+  const router = useRouter();
   const { isOffline } = useOffline();
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [groupName, setGroupName] = useState('Preguntas');
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Para demo: usa el primer grupo disponible. Adapta según tu flujo.
-  const GROUP_ID = 'default';
-
   const loadQuestions = useCallback(
     async (reset = false) => {
+      if (!groupId) return;
       const currentPage = reset ? 1 : page;
 
       // Si está offline, intenta cargar desde caché
       if (isOffline) {
-        const cached = await getCached<Question[]>(STORAGE_KEYS.QUESTIONS_CACHE);
+        const cached = await getCached<Question[]>(
+          `${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`,
+        );
         if (cached) setQuestions(cached);
         setIsLoading(false);
         return;
       }
 
       try {
-        const { data } = await questionsApi.getGroupQuestions(GROUP_ID, currentPage);
+        const { data } = await questionsApi.getGroupQuestions(groupId, currentPage);
         const newItems = data.data;
 
         if (reset) {
           setQuestions(newItems);
           // Actualiza caché
-          await setCached(STORAGE_KEYS.QUESTIONS_CACHE, newItems);
+          await setCached(`${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`, newItems);
         } else {
           setQuestions((prev) => [...prev, ...newItems]);
         }
@@ -89,19 +93,24 @@ export default function QuestionsScreen() {
         setPage(currentPage + 1);
       } catch (err) {
         // Si falla, usa caché
-        const cached = await getCached<Question[]>(STORAGE_KEYS.QUESTIONS_CACHE);
+        const cached = await getCached<Question[]>(
+          `${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`,
+        );
         if (cached && reset) setQuestions(cached);
       } finally {
         setIsLoading(false);
         setIsRefreshing(false);
       }
     },
-    [isOffline, page, GROUP_ID],
+    [isOffline, page, groupId],
   );
 
   useEffect(() => {
-    loadQuestions(true);
-  }, []);
+    if (groupId) {
+      setGroupName(`Preguntas del grupo`);
+      loadQuestions(true);
+    }
+  }, [groupId]);
 
   const onRefresh = () => {
     setIsRefreshing(true);
@@ -119,6 +128,17 @@ export default function QuestionsScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backBtn}
+        >
+          <Text style={styles.backBtnText}>← Volver</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{groupName}</Text>
+        <View style={{ width: 60 }} />
+      </View>
+
       {isOffline && (
         <View style={styles.offlineBanner}>
           <Text style={styles.offlineText}>📵 Sin conexión — mostrando datos guardados</Text>
@@ -140,7 +160,7 @@ export default function QuestionsScreen() {
         onEndReachedThreshold={0.3}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyText}>No hay preguntas aún</Text>
+            <Text style={styles.emptyText}>No hay preguntas en este grupo aún</Text>
           </View>
         }
         ListFooterComponent={
@@ -162,6 +182,19 @@ export default function QuestionsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  backBtn: { padding: 8 },
+  backBtnText: { color: '#4F46E5', fontWeight: '600', fontSize: 14 },
+  headerTitle: { fontWeight: '700', fontSize: 18, color: '#111827' },
   list: { padding: 16, gap: 12 },
   card: {
     backgroundColor: '#fff',
