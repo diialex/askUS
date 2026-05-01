@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.routers import auth as auth_router
 from app.routers import groups as groups_router
+from app.routers import questions as questions_router
 
 
 @asynccontextmanager
@@ -52,6 +53,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router.router, prefix="/api/v1")
 app.include_router(groups_router.router, prefix="/api/v1")
+app.include_router(questions_router.router, prefix="/api/v1")
 
 
 @app.get(
