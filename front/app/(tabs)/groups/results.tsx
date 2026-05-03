@@ -10,7 +10,7 @@ import type { QuestionResults, ResultEntry } from '@/types';
 
 // ─── Colores del gráfico ──────────────────────────────────────────────────────
 
-const COLORS = ['#4F46E5', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
+const COLORS = ['#FACC15', '#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#EF4444'];
 
 // ─── Pie chart SVG ────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ function PieChart({ data, size = 220 }: { data: { percentage: number; color: str
         <Path key={i} d={slice.d} fill={slice.color} stroke="#fff" strokeWidth={2} />
       ))}
       {/* Hueco central */}
-      <Circle cx={cx} cy={cy} r={r * 0.38} fill="#F3F4F6" />
+      <Circle cx={cx} cy={cy} r={r * 0.38} fill="#0F0F0F" />
       {slices.map((slice, i) =>
         slice.pct >= 8 ? (
           <SvgText
@@ -168,7 +168,7 @@ export default function ResultsScreen() {
   }, [gqId]);
 
   if (isLoading) {
-    return <View style={s.centered}><ActivityIndicator size="large" color="#4F46E5" /></View>;
+    return <View style={s.centered}><ActivityIndicator size="large" color="#FACC15" /></View>;
   }
 
   const pieData = (results?.results ?? []).map((r, i) => ({
@@ -235,27 +235,27 @@ export default function ResultsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+    backgroundColor: '#1A1A1A', paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: '#2D2D2D',
   },
   backBtn: { padding: 8 },
-  backText: { fontSize: 20, color: '#4F46E5' },
-  headerTitle: { fontWeight: '700', fontSize: 17, color: '#111827' },
+  backText: { fontSize: 20, color: '#FACC15' },
+  headerTitle: { fontWeight: '700', fontSize: 17, color: '#F9FAFB' },
   scroll: { padding: 16, paddingBottom: 40 },
-  questionText: { fontSize: 16, fontWeight: '600', color: '#111827', textAlign: 'center', lineHeight: 24 },
+  questionText: { fontSize: 16, fontWeight: '600', color: '#F9FAFB', textAlign: 'center', lineHeight: 24 },
   totalVotes: { textAlign: 'center', color: '#6B7280', fontSize: 13, marginTop: 4, marginBottom: 20 },
   chartContainer: { alignItems: 'center', marginBottom: 16 },
   legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24, justifyContent: 'center' },
   legendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendName: { fontSize: 13, color: '#374151', fontWeight: '500' },
-  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#374151', marginBottom: 12 },
+  legendName: { fontSize: 13, color: '#2D2D2D', fontWeight: '500' },
+  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#2D2D2D', marginBottom: 12 },
   resultRow: {
-    backgroundColor: '#fff', borderRadius: 14, marginBottom: 10,
+    backgroundColor: '#1A1A1A', borderRadius: 14, marginBottom: 10,
     overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1,
   },
@@ -266,45 +266,45 @@ const s = StyleSheet.create({
     width: 24, height: 24, borderRadius: 12,
     justifyContent: 'center', alignItems: 'center',
   },
-  rankText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  rankText: { color: '#0F0F0F', fontWeight: '700', fontSize: 12 },
   resultAvatar: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#2A2000', justifyContent: 'center', alignItems: 'center',
   },
-  resultAvatarText: { color: '#4F46E5', fontWeight: '700', fontSize: 16 },
-  resultName: { fontSize: 14, fontWeight: '600', color: '#111827', marginBottom: 4 },
+  resultAvatarText: { color: '#FACC15', fontWeight: '700', fontSize: 16 },
+  resultName: { fontSize: 14, fontWeight: '600', color: '#F9FAFB', marginBottom: 4 },
   barRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  barBg: { flex: 1, height: 6, backgroundColor: '#E5E7EB', borderRadius: 3 },
+  barBg: { flex: 1, height: 6, backgroundColor: '#2D2D2D', borderRadius: 3 },
   barFill: { height: 6, borderRadius: 3 },
   resultPct: { fontSize: 11, color: '#6B7280', width: 32 },
-  voteCount: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  voteCount: { fontSize: 13, fontWeight: '600', color: '#2D2D2D' },
   chevron: { fontSize: 10, color: '#9CA3AF', marginLeft: 4 },
-  voterList: { paddingHorizontal: 14, paddingBottom: 14, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  voterList: { paddingHorizontal: 14, paddingBottom: 14, borderTopWidth: 1, borderTopColor: '#0F0F0F' },
   voterTitle: { fontSize: 12, color: '#6B7280', fontWeight: '600', marginBottom: 8, marginTop: 8 },
   voterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 },
   voterAvatar: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#EEF2FF', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#2A2000', justifyContent: 'center', alignItems: 'center',
   },
-  voterAvatarText: { fontSize: 12, fontWeight: '700', color: '#4F46E5' },
-  voterName: { fontSize: 13, color: '#374151' },
+  voterAvatarText: { fontSize: 12, fontWeight: '700', color: '#FACC15' },
+  voterName: { fontSize: 13, color: '#2D2D2D' },
   emptyBox: { alignItems: 'center', marginTop: 60, gap: 10 },
   emptyIcon: { fontSize: 48 },
   emptyText: { color: '#9CA3AF', fontSize: 16 },
   // Ad
   adOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   adCard: {
-    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    backgroundColor: '#1A1A1A', borderTopLeftRadius: 24, borderTopRightRadius: 24,
     padding: 24, paddingBottom: 40,
   },
   adLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center', marginBottom: 16 },
   adContent: { alignItems: 'center', gap: 8, marginBottom: 24 },
   adEmoji: { fontSize: 48 },
-  adTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  adTitle: { fontSize: 18, fontWeight: '700', color: '#F9FAFB' },
   adSubtitle: { fontSize: 14, color: '#6B7280' },
   adClose: {
-    backgroundColor: '#4F46E5', borderRadius: 14,
+    backgroundColor: '#FACC15', borderRadius: 14,
     paddingVertical: 15, alignItems: 'center',
   },
-  adCloseText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  adCloseText: { color: '#0F0F0F', fontWeight: '700', fontSize: 15 },
 });

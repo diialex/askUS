@@ -54,6 +54,10 @@ class User(SQLModel, table=True):
         description="User last update timestamp",
     )
 
+    # Push notifications
+    push_token: Optional[str] = Field(default=None, description="Expo push token")
+    push_platform: Optional[str] = Field(default=None, description="ios or android")
+
     # Boolean flags
     is_active: bool = Field(default=True, description="Is user active")
     is_verified: bool = Field(default=False, description="Is email verified")

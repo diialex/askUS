@@ -136,7 +136,7 @@ export default function ProfileScreen() {
           disabled={isSaving}
         >
           {isSaving ? (
-            <ActivityIndicator color="#fff" size="small" />
+            <ActivityIndicator color="#0F0F0F" size="small" />
           ) : (
             <Text style={styles.saveBtnText}>Guardar cambios</Text>
           )}
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
         <Text style={styles.deleteText}>Eliminar cuenta</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>AskUs v1.0.0</Text>
+      <Text style={styles.version}>Whoops v1.0.0</Text>
 
       {/* Modal confirmación borrado */}
       <Modal visible={showDeleteModal} transparent animationType="fade">
@@ -202,7 +202,7 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   content: { padding: 24, alignItems: 'center' },
   avatarWrapper: { marginBottom: 12, position: 'relative' },
   avatar: { width: 90, height: 90, borderRadius: 45 },
@@ -210,11 +210,11 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#2A2000',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarInitial: { fontSize: 36, fontWeight: '700', color: '#4F46E5' },
+  avatarInitial: { fontSize: 36, fontWeight: '700', color: '#FACC15' },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
     borderRadius: 45,
@@ -226,16 +226,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#2D2D2D',
   },
   emailText: { color: '#6B7280', fontSize: 14, marginBottom: 24 },
   section: {
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -243,28 +243,29 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: '700',
     fontSize: 16,
-    color: '#111827',
+    color: '#F9FAFB',
     marginBottom: 16,
   },
   label: { color: '#6B7280', fontSize: 13, marginBottom: 6 },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#2D2D2D',
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
+    color: '#F9FAFB',
+    backgroundColor: '#0F0F0F',
     marginBottom: 16,
   },
   saveBtn: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#FACC15',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: 'center',
   },
   saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  saveBtnText: { color: '#0F0F0F', fontWeight: '700', fontSize: 15 },
   logoutBtn: {
     width: '100%',
     borderWidth: 1.5,
@@ -275,36 +276,37 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logoutText: { color: '#EF4444', fontWeight: '700', fontSize: 15 },
-  version: { color: '#D1D5DB', fontSize: 12 },
+  version: { color: '#6B7280', fontSize: 12 },
   deleteBtn: {
     width: '100%', paddingVertical: 14, alignItems: 'center', marginBottom: 24,
   },
   deleteText: { color: '#9CA3AF', fontSize: 13, textDecorationLine: 'underline' },
   // Modal
   modalOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center', alignItems: 'center', padding: 24,
   },
   modalCard: {
-    backgroundColor: '#fff', borderRadius: 20, padding: 24, width: '100%', gap: 12,
+    backgroundColor: '#1A1A1A', borderRadius: 20, padding: 24, width: '100%', gap: 12,
   },
-  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#F9FAFB' },
   modalBody: { fontSize: 14, color: '#6B7280', lineHeight: 20 },
   deleteInput: {
     borderWidth: 1.5, borderColor: '#EF4444', borderRadius: 10,
     paddingHorizontal: 14, paddingVertical: 12,
     fontSize: 16, fontWeight: '700', color: '#EF4444', textAlign: 'center', letterSpacing: 2,
+    backgroundColor: '#0F0F0F',
   },
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 4 },
   modalCancelBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 12,
-    backgroundColor: '#F3F4F6', alignItems: 'center',
+    backgroundColor: '#0F0F0F', alignItems: 'center',
   },
-  modalCancelText: { color: '#374151', fontWeight: '600', fontSize: 15 },
+  modalCancelText: { color: '#9CA3AF', fontWeight: '600', fontSize: 15 },
   modalDeleteBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 12,
     backgroundColor: '#EF4444', alignItems: 'center',
   },
-  modalDeleteBtnDisabled: { backgroundColor: '#FCA5A5' },
+  modalDeleteBtnDisabled: { backgroundColor: '#7F1D1D' },
   modalDeleteText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });

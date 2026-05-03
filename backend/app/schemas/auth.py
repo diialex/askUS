@@ -31,6 +31,13 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
+class PushTokenRequest(BaseModel):
+    """Register Expo push token."""
+
+    push_token: str
+    platform: str = Field(pattern="^(ios|android)$")
+
+
 # ─── Responses ─────────────────────────────────────────────────────────────
 
 

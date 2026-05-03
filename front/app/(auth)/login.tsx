@@ -16,16 +16,12 @@ import { z } from 'zod';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '@context/AuthContext';
 
-// ─── Validación ───────────────────────────────────────────────────────────────
-
 const schema = z.object({
   email: z.string().email('Email inválido'),
   password: z.string().min(6, 'Mínimo 6 caracteres'),
 });
 
 type FormData = z.infer<typeof schema>;
-
-// ─── Pantalla ─────────────────────────────────────────────────────────────────
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -40,22 +36,17 @@ export default function LoginScreen() {
     try {
       await login(data);
     } catch (err: unknown) {
-      const message =
-        (err as { message?: string })?.message ?? 'No se pudo iniciar sesión';
+      const message = (err as { message?: string })?.message ?? 'No se pudo iniciar sesión';
       Toast.show({ type: 'error', text1: 'Error', text2: message });
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>AskUs</Text>
+        <Text style={styles.title}>Whoops</Text>
         <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
 
-        {/* Email */}
         <Controller
           control={control}
           name="email"
@@ -64,7 +55,7 @@ export default function LoginScreen() {
               <TextInput
                 style={[styles.input, errors.email && styles.inputError]}
                 placeholder="Correo electrónico"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#6B7280"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -72,14 +63,11 @@ export default function LoginScreen() {
                 onChangeText={onChange}
                 value={value}
               />
-              {errors.email && (
-                <Text style={styles.errorText}>{errors.email.message}</Text>
-              )}
+              {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
             </View>
           )}
         />
 
-        {/* Contraseña */}
         <Controller
           control={control}
           name="password"
@@ -88,33 +76,28 @@ export default function LoginScreen() {
               <TextInput
                 style={[styles.input, errors.password && styles.inputError]}
                 placeholder="Contraseña"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#6B7280"
                 secureTextEntry
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
               />
-              {errors.password && (
-                <Text style={styles.errorText}>{errors.password.message}</Text>
-              )}
+              {errors.password && <Text style={styles.errorText}>{errors.password.message}</Text>}
             </View>
           )}
         />
 
-        {/* Botón */}
         <TouchableOpacity
           style={[styles.button, isSubmitting && styles.buttonDisabled]}
           onPress={handleSubmit(onSubmit)}
           disabled={isSubmitting}
         >
-          {isSubmitting ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>Iniciar sesión</Text>
-          )}
+          {isSubmitting
+            ? <ActivityIndicator color="#0F0F0F" />
+            : <Text style={styles.buttonText}>Iniciar sesión</Text>
+          }
         </TouchableOpacity>
 
-        {/* Link a registro */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>¿No tienes cuenta? </Text>
           <Link href="/(auth)/register" asChild>
@@ -128,52 +111,26 @@ export default function LoginScreen() {
   );
 }
 
-// ─── Estilos ──────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: '#F9FAFB' },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 40,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: '#4F46E5',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginBottom: 32,
-  },
+  flex: { flex: 1, backgroundColor: '#0F0F0F' },
+  container: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 },
+  title: { fontSize: 40, fontWeight: '800', color: '#FACC15', textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontSize: 16, color: '#9CA3AF', textAlign: 'center', marginBottom: 32 },
   fieldWrapper: { marginBottom: 16 },
   input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#D1D5DB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#111827',
+    backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: '#2D2D2D',
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
+    fontSize: 15, color: '#F9FAFB',
   },
   inputError: { borderColor: '#EF4444' },
   errorText: { color: '#EF4444', fontSize: 12, marginTop: 4, marginLeft: 4 },
   button: {
-    backgroundColor: '#4F46E5',
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
+    backgroundColor: '#FACC15', borderRadius: 12,
+    paddingVertical: 16, alignItems: 'center', marginTop: 8,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonText: { color: '#0F0F0F', fontSize: 16, fontWeight: '800' },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
   footerText: { color: '#6B7280', fontSize: 14 },
-  link: { color: '#4F46E5', fontSize: 14, fontWeight: '600' },
+  link: { color: '#FACC15', fontSize: 14, fontWeight: '600' },
 });

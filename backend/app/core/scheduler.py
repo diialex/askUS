@@ -15,9 +15,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from sqlalchemy import select
 
+from app.core.push_notifications import send_push_notifications
 from app.db.database import AsyncSessionFactory
 from app.models.group import Group, GroupMember
 from app.models.question import GroupQuestion, Question
+from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +82,29 @@ async def send_daily_questions() -> None:
                     status="active",
                 )
                 session.add(gq)
+
+                # 6. Recoger tokens de los miembros del grupo
+                members_result = await session.execute(
+                    select(GroupMember).where(GroupMember.group_uuid == group.uuid)
+                )
+                member_uuids = [m.user_uuid for m in members_result.scalars().all()]
+
+                users_result = await session.execute(
+                    select(User).where(
+                        User.uuid.in_(member_uuids),
+                        User.push_token.isnot(None),
+                    )
+                )
+                tokens = [u.push_token for u in users_result.scalars().all() if u.push_token]
+
+                if tokens:
+                    await send_push_notifications(
+                        tokens=tokens,
+                        title="¡Nueva pregunta en " + group.name + "! 🎯",
+                        body=question.text,
+                        data={"group_uuid": str(group.uuid)},
+                    )
+
                 sent += 1
 
             await session.commit()
@@ -100,7 +125,8 @@ def setup_scheduler() -> None:
         id="daily_questions",
         name="Envío diario de preguntas a grupos",
         replace_existing=True,
-        misfire_grace_time=60 * 10,   # tolera hasta 10 min de retraso
+        misfire_grace_time=60 * 60,   # tolera hasta 1 hora de retraso
+        coalesce=True,                # si se perdieron varios ticks, ejecuta sólo una vez
     )
     scheduler.start()
     next_run = scheduler.get_job("daily_questions").next_run_time

@@ -1,33 +1,23 @@
 import { Tabs } from 'expo-router';
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 
-// Iconos simples con emoji mientras no usas una librería de iconos
 function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return (
-    <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.5 }}>{icon}</Text>
-  );
+  return <Text style={{ fontSize: 22, opacity: focused ? 1 : 0.4 }}>{icon}</Text>;
 }
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#4F46E5',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: '#FACC15',
+        tabBarInactiveTintColor: '#6B7280',
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabLabel,
         headerStyle: styles.header,
-        headerTintColor: '#111827',
+        headerTintColor: '#F9FAFB',
         headerTitleStyle: styles.headerTitle,
       }}
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Inicio',
-          tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} />,
-        }}
-      />
       <Tabs.Screen
         name="groups"
         options={{
@@ -48,12 +38,12 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: '#fff',
-    borderTopColor: '#E5E7EB',
+    backgroundColor: '#1A1A1A',
+    borderTopColor: '#2D2D2D',
     height: 60,
     paddingBottom: 8,
   },
   tabLabel: { fontSize: 11, fontWeight: '600' },
-  header: { backgroundColor: '#fff' },
-  headerTitle: { fontWeight: '700', fontSize: 18, color: '#111827' },
+  header: { backgroundColor: '#1A1A1A' },
+  headerTitle: { fontWeight: '700', fontSize: 18, color: '#F9FAFB' },
 });

@@ -662,6 +662,25 @@ async def get_results(
     }
 
 
+@router.post(
+    "/admin/trigger-daily-questions",
+    response_model=dict,
+    summary="Trigger the daily question dispatch manually (admin only)",
+)
+async def trigger_daily_questions(
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    """
+    Dispara el envío diario de preguntas a todos los grupos activos
+    de forma inmediata, sin esperar al cron de las 14:00.
+    Útil para testing o si el scheduler se perdió el tick.
+    """
+    from app.core.scheduler import send_daily_questions
+    await send_daily_questions()
+    return {"success": True, "message": "Daily questions dispatched manually"}
+
+
 @router.delete(
     "/answers/{answer_id}",
     response_model=ApiResponse[None],

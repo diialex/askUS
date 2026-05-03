@@ -24,6 +24,7 @@ from app.schemas.auth import (
     AuthResponse,
     AuthTokens,
     LoginRequest,
+    PushTokenRequest,
     RefreshTokenRequest,
     RegisterRequest,
     UserResponse,
@@ -240,6 +241,100 @@ async def logout():
         data=None,
         message="Logout successful",
     )
+
+
+@router.delete(
+    "/me",
+    name="delete_account",
+    response_model=ApiResponse[None],
+    summary="Delete own account and all associated data",
+)
+async def delete_account(
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    from sqlalchemy import delete as sql_delete
+    from app.models.group import Group, GroupMember
+    from app.models.question import Answer, GroupQuestion
+
+    # 1. Borrar respuestas del usuario
+    await session.execute(
+        sql_delete(Answer).where(Answer.author_uuid == str(user.uuid))
+    )
+
+    # 2. Salir de todos los grupos (y decrementar member_count)
+    memberships = (await session.execute(
+        select(GroupMember).where(GroupMember.user_uuid == str(user.uuid))
+    )).scalars().all()
+
+    for m in memberships:
+        group = (await session.execute(
+            select(Group).where(Group.uuid == m.group_uuid)
+        )).scalar_one_or_none()
+        if group:
+            group.member_count = max(0, group.member_count - 1)
+        await session.delete(m)
+
+    # 3. Desactivar grupos que creó (sin borrarlos para no romper el historial)
+    await session.execute(
+        sql_delete(GroupMember).where(GroupMember.user_uuid == str(user.uuid))
+    )
+    groups_created = (await session.execute(
+        select(Group).where(Group.created_by == str(user.uuid))
+    )).scalars().all()
+    for g in groups_created:
+        g.is_active = False
+
+    # 4. Borrar el usuario
+    await session.delete(user)
+    await session.commit()
+
+    return ApiResponse(data=None, message="Account deleted")
+
+
+@router.post(
+    "/me/push-token",
+    name="register_push_token",
+    response_model=ApiResponse[None],
+    summary="Register or update Expo push token",
+)
+async def register_push_token(
+    data: PushTokenRequest,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    user.push_token = data.push_token
+    user.push_platform = data.platform
+    await session.commit()
+    return ApiResponse(data=None, message="Push token registered")
+
+
+@router.patch(
+    "/me",
+    name="update_profile",
+    response_model=ApiResponse[UserResponse],
+    summary="Update current user profile",
+)
+async def update_profile(
+    data: dict,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    from datetime import datetime as dt
+    if "name" in data and data["name"]:
+        user.username = data["name"]
+    if "avatar_url" in data:
+        pass  # TODO: campo avatar_url en el modelo
+    user.updated_at = dt.utcnow()
+    await session.commit()
+    await session.refresh(user)
+    return ApiResponse(data=UserResponse(
+        id=str(user.uuid),
+        name=user.username,
+        email=user.email,
+        created_at=user.created_at.isoformat(),
+        updated_at=user.updated_at.isoformat() if user.updated_at else None,
+    ))
 
 
 @router.get(

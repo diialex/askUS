@@ -56,7 +56,7 @@ export default function AnswerScreen() {
   };
 
   if (isLoading) {
-    return <View style={s.centered}><ActivityIndicator size="large" color="#4F46E5" /></View>;
+    return <View style={s.centered}><ActivityIndicator size="large" color="#FACC15" /></View>;
   }
 
   return (
@@ -112,7 +112,7 @@ export default function AnswerScreen() {
           disabled={!selected || isSending}
         >
           {isSending ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#0F0F0F" />
           ) : (
             <Text style={s.confirmBtnText}>
               {selected ? `Votar por ${members.find(m => m.user_id === selected)?.name}` : 'Elige a alguien'}
@@ -125,53 +125,53 @@ export default function AnswerScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+    backgroundColor: '#1A1A1A', paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: '#2D2D2D',
   },
   backBtn: { padding: 8 },
-  backText: { fontSize: 20, color: '#4F46E5' },
-  headerTitle: { fontWeight: '700', fontSize: 17, color: '#111827' },
+  backText: { fontSize: 20, color: '#FACC15' },
+  headerTitle: { fontWeight: '700', fontSize: 17, color: '#F9FAFB' },
   questionBox: {
-    backgroundColor: '#4F46E5', margin: 16, borderRadius: 18,
+    backgroundColor: '#FACC15', margin: 16, borderRadius: 18,
     padding: 20,
-    shadowColor: '#4F46E5', shadowOpacity: 0.3, shadowRadius: 10,
+    shadowColor: '#FACC15', shadowOpacity: 0.3, shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 }, elevation: 4,
   },
-  questionText: { color: '#fff', fontSize: 17, fontWeight: '600', lineHeight: 25, textAlign: 'center' },
+  questionText: { color: '#0F0F0F', fontSize: 17, fontWeight: '600', lineHeight: 25, textAlign: 'center' },
   grid: { paddingHorizontal: 16, paddingBottom: 100 },
   row: { gap: 12, marginBottom: 12 },
   memberCard: {
-    flex: 1, backgroundColor: '#fff', borderRadius: 16, padding: 16,
+    flex: 1, backgroundColor: '#1A1A1A', borderRadius: 16, padding: 16,
     alignItems: 'center', gap: 8,
     borderWidth: 2, borderColor: 'transparent',
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 1,
   },
   memberCardSelected: {
-    borderColor: '#4F46E5', backgroundColor: '#EEF2FF',
+    borderColor: '#FACC15', backgroundColor: '#2A2000',
   },
   avatar: {
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#0F0F0F', justifyContent: 'center', alignItems: 'center',
   },
-  avatarSelected: { backgroundColor: '#4F46E5' },
+  avatarSelected: { backgroundColor: '#FACC15' },
   avatarText: { fontSize: 22, fontWeight: '700', color: '#6B7280' },
-  avatarTextSelected: { color: '#fff' },
-  memberName: { fontSize: 14, fontWeight: '600', color: '#374151', textAlign: 'center' },
-  memberNameSelected: { color: '#4F46E5' },
-  checkmark: { fontSize: 18, color: '#4F46E5' },
+  avatarTextSelected: { color: '#0F0F0F' },
+  memberName: { fontSize: 14, fontWeight: '600', color: '#2D2D2D', textAlign: 'center' },
+  memberNameSelected: { color: '#FACC15' },
+  checkmark: { fontSize: 18, color: '#FACC15' },
   footer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    padding: 20, backgroundColor: '#fff',
-    borderTopWidth: 1, borderTopColor: '#E5E7EB',
+    padding: 20, backgroundColor: '#1A1A1A',
+    borderTopWidth: 1, borderTopColor: '#2D2D2D',
   },
   confirmBtn: {
-    backgroundColor: '#4F46E5', borderRadius: 14,
+    backgroundColor: '#FACC15', borderRadius: 14,
     paddingVertical: 16, alignItems: 'center',
   },
   confirmBtnDisabled: { backgroundColor: '#C7D2FE' },
-  confirmBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  confirmBtnText: { color: '#0F0F0F', fontWeight: '700', fontSize: 16 },
 });

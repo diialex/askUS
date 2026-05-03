@@ -90,7 +90,7 @@ export default function GroupDetailScreen() {
   };
 
   if (isLoading) {
-    return <View style={styles.centered}><ActivityIndicator size="large" color="#4F46E5" /></View>;
+    return <View style={styles.centered}><ActivityIndicator size="large" color="#FACC15" /></View>;
   }
 
   const alreadyAnswered = !!activeQuestion?.my_answer;
@@ -114,7 +114,7 @@ export default function GroupDetailScreen() {
       <FlatList
         data={history}
         keyExtractor={(item) => item.id}
-        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); load(); }} colors={['#4F46E5']} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); load(); }} colors={['#FACC15']} />}
         ListHeaderComponent={
           <>
             {/* Pregunta activa */}
@@ -166,61 +166,61 @@ export default function GroupDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+    backgroundColor: '#1A1A1A', paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: '#2D2D2D',
   },
   backBtn: { padding: 8 },
-  backText: { fontSize: 20, color: '#4F46E5' },
-  headerTitle: { flex: 1, fontWeight: '700', fontSize: 17, color: '#111827', marginHorizontal: 8 },
+  backText: { fontSize: 20, color: '#FACC15' },
+  headerTitle: { flex: 1, fontWeight: '700', fontSize: 17, color: '#F9FAFB', marginHorizontal: 8 },
   inviteBtn: {
-    backgroundColor: '#EEF2FF', borderRadius: 10,
+    backgroundColor: '#2A2000', borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 7,
   },
-  inviteBtnText: { color: '#4F46E5', fontWeight: '600', fontSize: 13 },
+  inviteBtnText: { color: '#FACC15', fontWeight: '600', fontSize: 13 },
   list: { padding: 16, gap: 12 },
   activeCard: {
-    backgroundColor: '#4F46E5', borderRadius: 20, padding: 20,
+    backgroundColor: '#FACC15', borderRadius: 20, padding: 20,
     marginBottom: 8,
-    shadowColor: '#4F46E5', shadowOpacity: 0.3, shadowRadius: 12,
+    shadowColor: '#FACC15', shadowOpacity: 0.3, shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 }, elevation: 5,
   },
   activePill: {
     backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20,
     paddingHorizontal: 12, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 12,
   },
-  activePillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
-  activeQuestion: { color: '#fff', fontSize: 18, fontWeight: '700', lineHeight: 26, marginBottom: 16 },
+  activePillText: { color: '#0F0F0F', fontSize: 12, fontWeight: '600' },
+  activeQuestion: { color: '#0F0F0F', fontSize: 18, fontWeight: '700', lineHeight: 26, marginBottom: 16 },
   activeFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   activeMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
   answerBtn: {
-    backgroundColor: '#fff', borderRadius: 12,
+    backgroundColor: '#1A1A1A', borderRadius: 12,
     paddingHorizontal: 18, paddingVertical: 10,
   },
-  answerBtnText: { color: '#4F46E5', fontWeight: '700', fontSize: 14 },
+  answerBtnText: { color: '#FACC15', fontWeight: '700', fontSize: 14 },
   resultsBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12,
     paddingHorizontal: 16, paddingVertical: 10,
   },
-  resultsBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  resultsBtnText: { color: '#0F0F0F', fontWeight: '600', fontSize: 14 },
   noQuestion: { alignItems: 'center', paddingVertical: 32, gap: 8 },
   noQuestionIcon: { fontSize: 40 },
   noQuestionText: { color: '#6B7280', fontSize: 15 },
-  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#374151', marginTop: 8, marginBottom: 4 },
+  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#2D2D2D', marginTop: 8, marginBottom: 4 },
   historyCard: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 14,
+    backgroundColor: '#1A1A1A', borderRadius: 14, padding: 14,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1,
   },
   historyBadge: {
     backgroundColor: '#DCFCE7', borderRadius: 6,
     paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 8,
   },
-  historyBadgeClosed: { backgroundColor: '#F3F4F6' },
-  historyBadgeText: { fontSize: 11, color: '#374151', fontWeight: '600' },
-  historyText: { fontSize: 14, color: '#374151', lineHeight: 20, marginBottom: 8 },
+  historyBadgeClosed: { backgroundColor: '#0F0F0F' },
+  historyBadgeText: { fontSize: 11, color: '#2D2D2D', fontWeight: '600' },
+  historyText: { fontSize: 14, color: '#2D2D2D', lineHeight: 20, marginBottom: 8 },
   historyMeta: { fontSize: 12, color: '#9CA3AF' },
   emptyHistory: { alignItems: 'center', marginTop: 40 },
   emptyHistoryText: { color: '#9CA3AF', fontSize: 14 },

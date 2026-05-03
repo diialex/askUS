@@ -1,34 +1,35 @@
 {
   "expo": {
-    "name": "AskUs",
-    "slug": "askus",
+    "name": "Whoops",
+    "slug": "whoops",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "askus",
+    "scheme": "whoops",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0F0F0F"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.askus.app"
+      "bundleIdentifier": "com.whoops.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0F0F0F"
       },
-      "package": "com.askus.app",
+      "package": "com.whoops.app",
       "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -50,8 +51,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "AskUs necesita acceso a tus fotos para subir imágenes.",
-          "cameraPermission": "AskUs necesita acceso a tu cámara."
+          "photosPermission": "Whoops necesita acceso a tus fotos para subir imágenes.",
+          "cameraPermission": "Whoops necesita acceso a tu cámara."
         }
       ]
     ],
@@ -59,9 +60,13 @@
       "typedRoutes": true
     },
     "extra": {
+      "router": {
+        "origin": false
+      },
       "eas": {
-        "projectId": "TU_PROJECT_ID_AQUI"
+        "projectId": "9717832b-a576-424c-bb6c-2fadf5aad38d"
       }
-    }
+    },
+    "owner": "mrketchup14"
   }
 }

@@ -31,3 +31,6 @@ python-dotenv>=1.0.0
 
 # Scheduler (tarea diaria de preguntas)
 apscheduler>=3.10.0
+
+# HTTP client async (Expo Push API)
+httpx>=0.27.0

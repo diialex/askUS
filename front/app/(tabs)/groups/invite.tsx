@@ -56,7 +56,7 @@ export default function InviteScreen() {
   };
 
   if (isLoading) {
-    return <View style={s.centered}><ActivityIndicator size="large" color="#4F46E5" /></View>;
+    return <View style={s.centered}><ActivityIndicator size="large" color="#FACC15" /></View>;
   }
 
   return (
@@ -79,7 +79,7 @@ export default function InviteScreen() {
               <QRCode
                 value={invite.invite_url}
                 size={180}
-                color="#111827"
+                color="#F9FAFB"
                 backgroundColor="#fff"
               />
             </View>
@@ -120,7 +120,7 @@ export default function InviteScreen() {
             disabled={isJoining}
           >
             {isJoining ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#0F0F0F" />
             ) : (
               <Text style={s.joinBtnText}>Unirme al grupo</Text>
             )}
@@ -132,56 +132,56 @@ export default function InviteScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
+    backgroundColor: '#1A1A1A', paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: '#2D2D2D',
   },
   backBtn: { padding: 8 },
-  backText: { fontSize: 20, color: '#4F46E5' },
-  headerTitle: { fontWeight: '700', fontSize: 17, color: '#111827' },
+  backText: { fontSize: 20, color: '#FACC15' },
+  headerTitle: { fontWeight: '700', fontSize: 17, color: '#F9FAFB' },
   scroll: { padding: 16, gap: 16 },
   qrCard: {
-    backgroundColor: '#fff', borderRadius: 20, padding: 24,
+    backgroundColor: '#1A1A1A', borderRadius: 20, padding: 24,
     alignItems: 'center', gap: 16,
     shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 10, elevation: 2,
   },
-  qrLabel: { fontSize: 15, fontWeight: '600', color: '#374151' },
-  qrBox: { padding: 12, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#E5E7EB' },
+  qrLabel: { fontSize: 15, fontWeight: '600', color: '#2D2D2D' },
+  qrBox: { padding: 12, backgroundColor: '#1A1A1A', borderRadius: 16, borderWidth: 1, borderColor: '#2D2D2D' },
   codePill: {
-    backgroundColor: '#EEF2FF', borderRadius: 12,
+    backgroundColor: '#2A2000', borderRadius: 12,
     paddingHorizontal: 24, paddingVertical: 12,
   },
-  codeText: { fontSize: 28, fontWeight: '800', color: '#4F46E5', letterSpacing: 4 },
+  codeText: { fontSize: 28, fontWeight: '800', color: '#FACC15', letterSpacing: 4 },
   codeHint: { fontSize: 12, color: '#9CA3AF' },
   shareBtn: {
-    backgroundColor: '#4F46E5', borderRadius: 14,
+    backgroundColor: '#FACC15', borderRadius: 14,
     paddingVertical: 16, alignItems: 'center',
-    shadowColor: '#4F46E5', shadowOpacity: 0.3, shadowRadius: 8,
+    shadowColor: '#FACC15', shadowOpacity: 0.3, shadowRadius: 8,
     shadowOffset: { width: 0, height: 3 }, elevation: 3,
   },
-  shareBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  shareBtnText: { color: '#0F0F0F', fontWeight: '700', fontSize: 16 },
   divider: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E5E7EB' },
+  dividerLine: { flex: 1, height: 1, backgroundColor: '#2D2D2D' },
   dividerText: { fontSize: 12, color: '#9CA3AF', fontWeight: '500' },
   joinCard: {
-    backgroundColor: '#fff', borderRadius: 20, padding: 20, gap: 12,
+    backgroundColor: '#1A1A1A', borderRadius: 20, padding: 20, gap: 12,
     shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 8, elevation: 1,
   },
-  joinTitle: { fontSize: 15, fontWeight: '700', color: '#111827' },
+  joinTitle: { fontSize: 15, fontWeight: '700', color: '#F9FAFB' },
   codeInput: {
-    backgroundColor: '#F9FAFB', borderRadius: 12,
-    borderWidth: 1, borderColor: '#E5E7EB',
+    backgroundColor: '#0F0F0F', borderRadius: 12,
+    borderWidth: 1, borderColor: '#2D2D2D',
     paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 18, fontWeight: '700', color: '#111827',
+    fontSize: 18, fontWeight: '700', color: '#F9FAFB',
     letterSpacing: 3, textAlign: 'center',
   },
   joinBtn: {
-    backgroundColor: '#111827', borderRadius: 12,
+    backgroundColor: '#F9FAFB', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center',
   },
   joinBtnDisabled: { backgroundColor: '#9CA3AF' },
-  joinBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  joinBtnText: { color: '#0F0F0F', fontWeight: '700', fontSize: 15 },
 });

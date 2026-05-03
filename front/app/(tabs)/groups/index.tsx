@@ -266,7 +266,7 @@ export default function GroupsScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <ActivityIndicator size="large" color="#FACC15" />
       </View>
     );
   }
@@ -306,7 +306,7 @@ export default function GroupsScreen() {
               setIsRefreshing(true);
               loadGroups();
             }}
-            colors={['#4F46E5']}
+            colors={['#FACC15']}
           />
         }
         ListEmptyComponent={
@@ -333,22 +333,22 @@ export default function GroupsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   searchWrapper: { padding: 16, paddingBottom: 0 },
   searchInput: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#2D2D2D',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
+    color: '#F9FAFB',
   },
   list: { padding: 16, gap: 12 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     borderRadius: 16,
     padding: 16,
     shadowColor: '#000',
@@ -361,11 +361,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#2A2000',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  groupName: { fontWeight: '700', fontSize: 16, color: '#111827' },
+  groupName: { fontWeight: '700', fontSize: 16, color: '#F9FAFB' },
   groupDesc: { color: '#6B7280', fontSize: 13, marginTop: 2 },
   cardBottom: {
     flexDirection: 'row',
@@ -374,15 +374,15 @@ const styles = StyleSheet.create({
   },
   memberCount: { color: '#9CA3AF', fontSize: 13 },
   joinBtn: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#FACC15',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   leaveBtn: { backgroundColor: '#FEE2E2' },
-  joinBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  joinBtnText: { color: '#0F0F0F', fontWeight: '600', fontSize: 13 },
   leaveBtnText: { color: '#DC2626' },
-  hint: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#E5E7EB' },
+  hint: { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#2D2D2D' },
   hintText: { color: '#6366F1', fontSize: 12, fontWeight: '500' },
   offlineBanner: { backgroundColor: '#FEF3C7', padding: 10, alignItems: 'center' },
   offlineText: { color: '#92400E', fontSize: 13 },
@@ -397,16 +397,16 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#FACC15',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#4F46E5',
+    shadowColor: '#FACC15',
     shadowOpacity: 0.4,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
-  fabIcon: { color: '#fff', fontSize: 28, lineHeight: 32, fontWeight: '300' },
+  fabIcon: { color: '#0F0F0F', fontSize: 28, lineHeight: 32, fontWeight: '300' },
 });
 
 const modalStyles = StyleSheet.create({
@@ -415,7 +415,7 @@ const modalStyles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: '#1A1A1A',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
@@ -426,21 +426,21 @@ const modalStyles = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#2D2D2D',
     alignSelf: 'center',
     marginBottom: 12,
   },
-  title: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 8 },
+  title: { fontSize: 20, fontWeight: '700', color: '#F9FAFB', marginBottom: 8 },
   label: { fontSize: 13, fontWeight: '600', color: '#6B7280', marginTop: 8 },
   input: {
     backgroundColor: '#F9FAFB',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: '#2D2D2D',
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#111827',
+    color: '#F9FAFB',
   },
   textarea: { minHeight: 80, textAlignVertical: 'top' },
   actions: { flexDirection: 'row', gap: 12, marginTop: 16 },
@@ -448,7 +448,7 @@ const modalStyles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#0F0F0F',
     alignItems: 'center',
   },
   cancelText: { color: '#6B7280', fontWeight: '600', fontSize: 15 },
@@ -456,8 +456,8 @@ const modalStyles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     borderRadius: 12,
-    backgroundColor: '#4F46E5',
+    backgroundColor: '#FACC15',
     alignItems: 'center',
   },
-  createText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  createText: { color: '#0F0F0F', fontWeight: '700', fontSize: 15 },
 });
