@@ -15,7 +15,10 @@ export function useOffline() {
   }, []);
 
   function handleState(state: NetInfoState) {
-    setIsOffline(!state.isConnected || !state.isInternetReachable);
+    // Solo usamos isConnected. isInternetReachable hace ping a Google y falla
+    // en emuladores y redes locales aunque la API sea accesible.
+    const offline = state.isConnected === false;
+    setIsOffline(offline);
     setConnectionType(state.type);
   }
 

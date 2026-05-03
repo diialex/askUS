@@ -193,7 +193,7 @@ export default function GroupsScreen() {
       const { data } = await groupsApi.getMyGroups();
       setGroups(data.data);
       await setCached(STORAGE_KEYS.GROUPS_CACHE, data.data);
-    } catch {
+    } catch (err: any) {
       const cached = await getCached<Group[]>(STORAGE_KEYS.GROUPS_CACHE);
       if (cached) setGroups(cached);
     } finally {

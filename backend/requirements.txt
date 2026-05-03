@@ -28,3 +28,6 @@ email-validator>=2.1.0
 
 # Python-dotenv for loading .env files
 python-dotenv>=1.0.0
+
+# Scheduler (tarea diaria de preguntas)
+apscheduler>=3.10.0

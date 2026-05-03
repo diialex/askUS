@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.scheduler import setup_scheduler, shutdown_scheduler
 from app.routers import auth as auth_router
 from app.routers import groups as groups_router
 from app.routers import questions as questions_router
@@ -25,8 +26,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
     # Startup
     print(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
+    setup_scheduler()
     yield
     # Shutdown
+    shutdown_scheduler()
     print("Shutting down application...")
 
 
