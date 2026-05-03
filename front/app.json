@@ -54,7 +54,9 @@
           "photosPermission": "Whoops necesita acceso a tus fotos para subir imágenes.",
           "cameraPermission": "Whoops necesita acceso a tu cámara."
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
@@ -64,7 +66,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "9717832b-a576-424c-bb6c-2fadf5aad38d"
+        "projectId": "38090266-2c0f-42b0-a447-6a23ae292931"
       }
     },
     "owner": "mrketchup14"

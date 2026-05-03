@@ -140,7 +140,7 @@ export default function GroupDetailScreen() {
     <View style={s.container}>
       {/* Header */}
       <View style={s.header}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/groups')} style={s.backBtn}>
           <Text style={s.backText}>←</Text>
         </TouchableOpacity>
         <Text style={s.headerTitle} numberOfLines={1}>{groupName}</Text>

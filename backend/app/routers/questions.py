@@ -160,6 +160,11 @@ async def _require_group_admin(
 # Pool management
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _require_superuser(user) -> None:
+    if not user.is_superuser:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+
+
 @router.get(
     "/admin/questions",
     response_model=dict,
@@ -172,6 +177,7 @@ async def list_pool_questions(
     active_only: bool = False,
     page: int = 1,
 ):
+    _require_superuser(user)
     filters = []
     if category:
         filters.append(Question.category == category)
@@ -217,6 +223,7 @@ async def create_pool_question(
     user: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
+    _require_superuser(user)
     question = Question(
         text=data.text,
         category=data.category.value,
@@ -239,6 +246,7 @@ async def update_pool_question(
     user: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
+    _require_superuser(user)
     result = await session.execute(select(Question).where(Question.uuid == question_id))
     question = result.scalar_one_or_none()
     if not question:
@@ -267,6 +275,7 @@ async def delete_pool_question(
     user: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
+    _require_superuser(user)
     result = await session.execute(select(Question).where(Question.uuid == question_id))
     question = result.scalar_one_or_none()
     if not question:
@@ -671,11 +680,7 @@ async def trigger_daily_questions(
     user: CurrentUser,
     session: AsyncSession = Depends(get_session),
 ):
-    """
-    Dispara el envío diario de preguntas a todos los grupos activos
-    de forma inmediata, sin esperar al cron de las 14:00.
-    Útil para testing o si el scheduler se perdió el tick.
-    """
+    _require_superuser(user)
     from app.core.scheduler import send_daily_questions
     await send_daily_questions()
     return {"success": True, "message": "Daily questions dispatched manually"}

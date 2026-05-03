@@ -45,9 +45,14 @@ app: FastAPI = FastAPI(
 )
 
 # Add CORS middleware
+_ALLOWED_ORIGINS = [
+    "https://api.monotocolor.com",
+    "http://localhost:8081",   # Expo web dev
+    "http://localhost:19006",  # Expo web alternativo
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

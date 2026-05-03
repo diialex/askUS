@@ -16,11 +16,10 @@ from pydantic import BaseModel, Field
 # ── Enums ─────────────────────────────────────────────────────────────────────
 
 class QuestionCategory(str, Enum):
-    amigos  = "amigos"
-    trabajo = "trabajo"
-    pareja  = "pareja"
-    familia = "familia"
-    general = "general"
+    picante  = "picante"
+    incomoda = "incomoda"
+    graciosa = "graciosa"
+    general  = "general"
 
 
 # ── Shared sub-schemas ────────────────────────────────────────────────────────

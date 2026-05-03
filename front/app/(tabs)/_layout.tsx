@@ -8,6 +8,7 @@ function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
 export default function TabsLayout() {
   return (
     <Tabs
+      initialRouteName="groups"
       screenOptions={{
         tabBarActiveTintColor: '#FACC15',
         tabBarInactiveTintColor: '#6B7280',
@@ -31,6 +32,10 @@ export default function TabsLayout() {
           title: 'Perfil',
           tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} />,
         }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{ href: null }}
       />
     </Tabs>
   );

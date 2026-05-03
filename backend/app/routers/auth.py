@@ -4,10 +4,30 @@ Provides endpoints for user registration, login, and token management.
 """
 
 from datetime import timedelta
+from collections import defaultdict
+import time
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+# ── Rate limiter simple en memoria ────────────────────────────────────────────
+# { ip: [timestamp, ...] }  — máximo 10 intentos por minuto
+_login_attempts: dict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT = 10
+_RATE_WINDOW = 60  # segundos
+
+def _check_rate_limit(request: Request) -> None:
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    attempts = [t for t in _login_attempts[ip] if now - t < _RATE_WINDOW]
+    _login_attempts[ip] = attempts
+    if len(attempts) >= _RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Demasiados intentos. Espera un minuto.",
+        )
+    _login_attempts[ip].append(now)
 
 from app.core.config import settings
 from app.core.dependencies import CurrentUser
@@ -43,9 +63,11 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     description="Create a new user account",
 )
 async def register(
+    request: Request,
     data: RegisterRequest,
     session: AsyncSession = Depends(get_session),
 ):
+    _check_rate_limit(request)
     """
     Register a new user.
     Validates password confirmation and checks for existing email/username.
@@ -117,9 +139,11 @@ async def register(
     description="Authenticate user and return tokens",
 )
 async def login(
+    request: Request,
     data: LoginRequest,
     session: AsyncSession = Depends(get_session),
 ):
+    _check_rate_limit(request)
     """
     Authenticate user credentials and return JWT tokens.
     """
@@ -201,9 +225,10 @@ async def refresh_token(
             detail="User not found or disabled",
         )
 
-    # Generate new tokens
-    access_token = create_access_token(str(user.uuid))
-    refresh_token = create_refresh_token(str(user.uuid))
+    # Rotar tokens — el refresh viejo queda invalidado implícitamente
+    # (el cliente debe guardar el nuevo)
+    new_access_token = create_access_token(str(user.uuid))
+    new_refresh_token = create_refresh_token(str(user.uuid))
 
     return ApiResponse(
         data=AuthResponse(
@@ -215,8 +240,8 @@ async def refresh_token(
                 updated_at=user.updated_at.isoformat() if user.updated_at else None,
             ),
             tokens=AuthTokens(
-                access_token=access_token,
-                refresh_token=refresh_token,
+                access_token=new_access_token,
+                refresh_token=new_refresh_token,
                 expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             ),
         ),
