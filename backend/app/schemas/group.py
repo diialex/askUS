@@ -17,5 +17,11 @@ class GroupResponse(BaseModel):
     member_count: int
     is_member: bool
     created_by: str
+    invite_code: Optional[str] = None   # solo visible para miembros
     created_at: str
     updated_at: Optional[str]
+
+
+class InviteResponse(BaseModel):
+    invite_code: str
+    invite_url: str      # deep link: askus://join/{code}

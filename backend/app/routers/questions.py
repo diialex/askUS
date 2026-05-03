@@ -606,6 +606,62 @@ async def create_answer(
     return ApiResponse(data=_serialize_answer(answer, author), message="Answer saved")
 
 
+@router.get(
+    "/group-questions/{gq_id}/results",
+    response_model=dict,
+    summary="Resultados de una group question (votos + quién votó a quién)",
+)
+async def get_results(
+    gq_id: str,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    gq_result = await session.execute(
+        select(GroupQuestion).where(GroupQuestion.uuid == gq_id)
+    )
+    gq = gq_result.scalar_one_or_none()
+    if not gq:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
+    await _require_member(session, str(gq.group_uuid), str(user.uuid))
+
+    # Obtener todas las respuestas
+    ans_result = await session.execute(
+        select(Answer).where(Answer.group_question_uuid == gq_id)
+    )
+    answers = ans_result.scalars().all()
+
+    # Agrupar votos por usuario elegido
+    votes: dict[str, list[str]] = {}   # selected_user_uuid → [author_uuid, ...]
+    for ans in answers:
+        votes.setdefault(str(ans.selected_user_uuid), []).append(str(ans.author_uuid))
+
+    total = len(answers)
+
+    results = []
+    for selected_uuid, voter_uuids in sorted(votes.items(), key=lambda x: -len(x[1])):
+        selected_user = await _get_user(session, selected_uuid)
+        voters = []
+        for voter_uuid in voter_uuids:
+            voter = await _get_user(session, voter_uuid)
+            voters.append(_user_info(voter).model_dump())
+
+        results.append({
+            "user": _user_info(selected_user).model_dump(),
+            "vote_count": len(voter_uuids),
+            "percentage": round(len(voter_uuids) / total * 100, 1) if total else 0,
+            "voters": voters,
+        })
+
+    return {
+        "success": True,
+        "data": {
+            "total_votes": total,
+            "results": results,
+        },
+    }
+
+
 @router.delete(
     "/answers/{answer_id}",
     response_model=ApiResponse[None],

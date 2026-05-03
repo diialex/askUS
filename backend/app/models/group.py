@@ -1,8 +1,15 @@
+import random
+import string
 from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
 from sqlmodel import Field, SQLModel
+
+
+def _gen_invite_code() -> str:
+    """Genera un código de invitación de 8 caracteres (letras + dígitos)."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
 
 class Group(SQLModel, table=True):
@@ -15,6 +22,7 @@ class Group(SQLModel, table=True):
     cover_url: Optional[str] = Field(default=None, max_length=500)
     created_by: str = Field(index=True)  # references users.uuid
     member_count: int = Field(default=1)
+    invite_code: str = Field(default_factory=_gen_invite_code, index=True)
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)

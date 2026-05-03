@@ -3,6 +3,7 @@ import type {
   Group,
   GroupMember,
   CreateGroupRequest,
+  InviteInfo,
   ApiResponse,
   PaginatedResponse,
 } from '@/types';
@@ -47,4 +48,12 @@ export const groupsApi = {
     apiClient.get<PaginatedResponse<GroupMember>>(`/groups/${groupId}/members`, {
       params: { page },
     }),
+
+  /** Obtener código/enlace de invitación */
+  getInvite: (groupId: string) =>
+    apiClient.get<ApiResponse<InviteInfo>>(`/groups/${groupId}/invite`),
+
+  /** Unirse por código de invitación */
+  joinByCode: (code: string) =>
+    apiClient.post<ApiResponse<Group>>(`/groups/join-by-code/${code}`),
 };

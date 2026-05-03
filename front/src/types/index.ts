@@ -58,8 +58,14 @@ export interface Group {
   member_count: number;
   is_member: boolean;
   created_by: string;
+  invite_code?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface InviteInfo {
+  invite_code: string;
+  invite_url: string;
 }
 
 export interface CreateGroupRequest {
@@ -165,6 +171,20 @@ export interface ApiError {
   status?: number;
   /** Campo detail tal como lo devuelve FastAPI (string o array de errores Pydantic) */
   detail?: string;
+}
+
+// ─── Resultados ───────────────────────────────────────────────────────────────
+
+export interface ResultEntry {
+  user: Pick<User, 'id' | 'name' | 'avatar_url'>;
+  vote_count: number;
+  percentage: number;
+  voters: Pick<User, 'id' | 'name' | 'avatar_url'>[];
+}
+
+export interface QuestionResults {
+  total_votes: number;
+  results: ResultEntry[];
 }
 
 // ─── Notificaciones ───────────────────────────────────────────────────────────

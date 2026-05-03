@@ -7,6 +7,7 @@ import type {
   SendQuestionToGroupRequest,
   CreateAnswerRequest,
   QuestionCategory,
+  QuestionResults,
   ApiResponse,
   PaginatedResponse,
 } from '@/types';
@@ -87,6 +88,12 @@ export const answersApi = {
   /** Eliminar propia respuesta */
   delete: (answerId: string) =>
     apiClient.delete<ApiResponse<null>>(`/answers/${answerId}`),
+
+  /** Resultados: votos + quién votó a quién */
+  getResults: (groupQuestionId: string) =>
+    apiClient.get<{ success: boolean; data: QuestionResults }>(
+      `/group-questions/${groupQuestionId}/results`,
+    ),
 };
 
 // ─── Export unificado (retrocompatibilidad) ───────────────────────────────────

@@ -10,12 +10,12 @@ from app.db.database import get_session
 from app.models.group import Group, GroupMember
 from app.models.user import User
 from app.schemas.base import ApiResponse
-from app.schemas.group import CreateGroupRequest, GroupResponse
+from app.schemas.group import CreateGroupRequest, GroupResponse, InviteResponse
 
 router = APIRouter(prefix="/groups", tags=["Groups"])
 
 
-def _serialize(group: Group, is_member: bool) -> GroupResponse:
+def _serialize(group: Group, is_member: bool, include_invite: bool = False) -> GroupResponse:
     return GroupResponse(
         id=str(group.uuid),
         name=group.name,
@@ -24,6 +24,7 @@ def _serialize(group: Group, is_member: bool) -> GroupResponse:
         member_count=group.member_count,
         is_member=is_member,
         created_by=str(group.created_by),
+        invite_code=group.invite_code if include_invite else None,
         created_at=group.created_at.isoformat(),
         updated_at=group.updated_at.isoformat() if group.updated_at else None,
     )
@@ -258,6 +259,62 @@ async def leave_group(
     await session.commit()
 
     return ApiResponse(data=None, message="Left group")
+
+
+# ── Invitaciones ──────────────────────────────────────────────────────────────
+
+@router.get(
+    "/{group_id}/invite",
+    name="get_invite",
+    response_model=ApiResponse[InviteResponse],
+    summary="Obtener enlace/código de invitación del grupo",
+)
+async def get_invite(
+    group_id: str,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(select(Group).where(Group.uuid == group_id, Group.is_active == True))
+    group = result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group not found")
+    if not await _is_member(session, group.uuid, str(user.uuid)):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a member")
+
+    return ApiResponse(data=InviteResponse(
+        invite_code=group.invite_code,
+        invite_url=f"askus://join/{group.invite_code}",
+    ))
+
+
+@router.post(
+    "/join-by-code/{code}",
+    name="join_by_code",
+    response_model=ApiResponse[GroupResponse],
+    summary="Unirse a un grupo por código de invitación",
+)
+async def join_by_code(
+    code: str,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+):
+    result = await session.execute(
+        select(Group).where(Group.invite_code == code.upper(), Group.is_active == True)
+    )
+    group = result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Código de invitación no válido")
+
+    if await _is_member(session, group.uuid, str(user.uuid)):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ya eres miembro de este grupo")
+
+    session.add(GroupMember(group_uuid=group.uuid, user_uuid=str(user.uuid), role="member"))
+    group.member_count += 1
+    group.updated_at = datetime.utcnow()
+    await session.commit()
+    await session.refresh(group)
+
+    return ApiResponse(data=_serialize(group, True), message="¡Te uniste al grupo!")
 
 
 @router.get("/{group_id}/members", name="list_members", response_model=dict, summary="List group members")

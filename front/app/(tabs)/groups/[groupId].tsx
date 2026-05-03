@@ -1,245 +1,227 @@
 import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  RefreshControl,
+  View, Text, FlatList, StyleSheet, TouchableOpacity,
+  ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useEffect, useState, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useOffline } from '@hooks/useOffline';
-import { questionsApi } from '@api/questions';
-import { getCached, setCached } from '@store/cache';
-import { STORAGE_KEYS } from '@utils/constants';
-import type { Question } from '@/types';
+import { groupsApi } from '@api/groups';
+import { groupQuestionsApi } from '@api/questions';
+import type { GroupQuestion, GroupMember } from '@/types';
+import { useAuth } from '@context/AuthContext';
 
-// ─── Componente de pregunta ───────────────────────────────────────────────────
+// ─── Tarjeta pregunta del historial ──────────────────────────────────────────
 
-function QuestionCard({ item }: { item: Question }) {
+function HistoryCard({ item, onPress }: { item: GroupQuestion; onPress: () => void }) {
+  const isClosed = item.status === 'closed';
   return (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.author.name.charAt(0).toUpperCase()}
-          </Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <View style={styles.historyCard}>
+        <View style={[styles.historyBadge, isClosed && styles.historyBadgeClosed]}>
+          <Text style={styles.historyBadgeText}>{isClosed ? 'Cerrada' : 'Activa'}</Text>
         </View>
-        <View style={styles.cardMeta}>
-          <Text style={styles.authorName}>{item.author.name}</Text>
-          <Text style={styles.cardDate}>
-            {new Date(item.created_at).toLocaleDateString('es-ES')}
-          </Text>
-        </View>
-        <View style={[styles.badge, item.status === 'closed' && styles.badgeClosed]}>
-          <Text style={styles.badgeText}>
-            {item.status === 'open' ? 'Abierta' : 'Cerrada'}
-          </Text>
-        </View>
+        <Text style={styles.historyText} numberOfLines={2}>{item.question.text}</Text>
+        <Text style={styles.historyMeta}>
+          💬 {item.answer_count} respuestas · {new Date(item.sent_at).toLocaleDateString('es-ES')}
+        </Text>
       </View>
-      <Text style={styles.questionText}>{item.text}</Text>
-      <View style={styles.cardFooter}>
-        <Text style={styles.answerCount}>💬 {item.answer_count} respuestas</Text>
-        {item.my_answer && (
-          <Text style={styles.answered}>✅ Ya respondiste</Text>
-        )}
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
-// ─── Pantalla de preguntas del grupo ───────────────────────────────────────────
+// ─── Pantalla ─────────────────────────────────────────────────────────────────
 
-export default function GroupQuestionsScreen() {
+export default function GroupDetailScreen() {
   const { groupId } = useLocalSearchParams<{ groupId: string }>();
   const router = useRouter();
-  const { isOffline } = useOffline();
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [groupName, setGroupName] = useState('Preguntas');
+  const { user } = useAuth();
+
+  const [activeQuestion, setActiveQuestion] = useState<GroupQuestion | null>(null);
+  const [history, setHistory] = useState<GroupQuestion[]>([]);
+  const [groupName, setGroupName] = useState('Grupo');
+  const [members, setMembers] = useState<GroupMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
 
-  const loadQuestions = useCallback(
-    async (reset = false) => {
-      if (!groupId) return;
-      const currentPage = reset ? 1 : page;
+  const load = useCallback(async () => {
+    if (!groupId) return;
+    try {
+      const [groupRes, activeRes, historyRes, membersRes] = await Promise.allSettled([
+        groupsApi.getGroup(groupId),
+        groupQuestionsApi.getActive(groupId),
+        groupQuestionsApi.list(groupId, 1),
+        groupsApi.getMembers(groupId, 1),
+      ]);
 
-      // Si está offline, intenta cargar desde caché
-      if (isOffline) {
-        const cached = await getCached<Question[]>(
-          `${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`,
-        );
-        if (cached) setQuestions(cached);
-        setIsLoading(false);
-        return;
+      if (groupRes.status === 'fulfilled') {
+        setGroupName(groupRes.value.data.data.name);
       }
-
-      try {
-        const { data } = await questionsApi.getGroupQuestions(groupId, currentPage);
-        const newItems = data.data;
-
-        if (reset) {
-          setQuestions(newItems);
-          // Actualiza caché
-          await setCached(`${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`, newItems);
-        } else {
-          setQuestions((prev) => [...prev, ...newItems]);
-        }
-
-        setHasMore(data.meta.current_page < data.meta.last_page);
-        setPage(currentPage + 1);
-      } catch (err) {
-        // Si falla, usa caché
-        const cached = await getCached<Question[]>(
-          `${STORAGE_KEYS.QUESTIONS_CACHE}_${groupId}`,
-        );
-        if (cached && reset) setQuestions(cached);
-      } finally {
-        setIsLoading(false);
-        setIsRefreshing(false);
+      if (activeRes.status === 'fulfilled') {
+        setActiveQuestion(activeRes.value.data.data);
+      } else {
+        setActiveQuestion(null);
       }
-    },
-    [isOffline, page, groupId],
-  );
-
-  useEffect(() => {
-    if (groupId) {
-      setGroupName(`Preguntas del grupo`);
-      loadQuestions(true);
+      if (historyRes.status === 'fulfilled') {
+        setHistory(historyRes.value.data.data.filter(q => q.status === 'closed'));
+      }
+      if (membersRes.status === 'fulfilled') {
+        setMembers(membersRes.value.data.data);
+      }
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, [groupId]);
 
-  const onRefresh = () => {
-    setIsRefreshing(true);
-    setPage(1);
-    loadQuestions(true);
+  useEffect(() => { load(); }, [groupId]);
+
+  const goToAnswer = () => {
+    if (!activeQuestion) return;
+    router.push({
+      pathname: '/(tabs)/groups/answer',
+      params: { groupId, gqId: activeQuestion.id, gqUuid: activeQuestion.id },
+    });
+  };
+
+  const goToResults = (gq: GroupQuestion) => {
+    router.push({
+      pathname: '/(tabs)/groups/results',
+      params: { gqId: gq.id, questionText: gq.question.text },
+    });
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#4F46E5" />
-      </View>
-    );
+    return <View style={styles.centered}><ActivityIndicator size="large" color="#4F46E5" /></View>;
   }
+
+  const alreadyAnswered = !!activeQuestion?.my_answer;
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backBtn}
-        >
-          <Text style={styles.backBtnText}>← Volver</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{groupName}</Text>
-        <View style={{ width: 60 }} />
+        <Text style={styles.headerTitle} numberOfLines={1}>{groupName}</Text>
+        <TouchableOpacity
+          style={styles.inviteBtn}
+          onPress={() => router.push({ pathname: '/(tabs)/groups/invite', params: { groupId } })}
+        >
+          <Text style={styles.inviteBtnText}>👥 Invitar</Text>
+        </TouchableOpacity>
       </View>
 
-      {isOffline && (
-        <View style={styles.offlineBanner}>
-          <Text style={styles.offlineText}>📵 Sin conexión — mostrando datos guardados</Text>
-        </View>
-      )}
       <FlatList
-        data={questions}
+        data={history}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <QuestionCard item={item} />}
+        refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => { setIsRefreshing(true); load(); }} colors={['#4F46E5']} />}
+        ListHeaderComponent={
+          <>
+            {/* Pregunta activa */}
+            {activeQuestion ? (
+              <View style={styles.activeCard}>
+                <View style={styles.activePill}>
+                  <Text style={styles.activePillText}>🕐 Pregunta de hoy</Text>
+                </View>
+                <Text style={styles.activeQuestion}>{activeQuestion.question.text}</Text>
+                <View style={styles.activeFooter}>
+                  <Text style={styles.activeMeta}>💬 {activeQuestion.answer_count} respuestas</Text>
+                  {alreadyAnswered ? (
+                    <TouchableOpacity style={styles.resultsBtn} onPress={() => goToResults(activeQuestion)}>
+                      <Text style={styles.resultsBtnText}>Ver resultados →</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity style={styles.answerBtn} onPress={goToAnswer}>
+                      <Text style={styles.answerBtnText}>¡Responder!</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            ) : (
+              <View style={styles.noQuestion}>
+                <Text style={styles.noQuestionIcon}>⏳</Text>
+                <Text style={styles.noQuestionText}>La pregunta llegará a las 14:00</Text>
+              </View>
+            )}
+
+            {history.length > 0 && (
+              <Text style={styles.sectionTitle}>Preguntas anteriores</Text>
+            )}
+          </>
+        }
+        renderItem={({ item }) => (
+          <HistoryCard item={item} onPress={() => goToResults(item)} />
+        )}
         contentContainerStyle={styles.list}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            colors={['#4F46E5']}
-          />
-        }
-        onEndReached={() => hasMore && loadQuestions()}
-        onEndReachedThreshold={0.3}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>No hay preguntas en este grupo aún</Text>
-          </View>
-        }
-        ListFooterComponent={
-          hasMore ? (
-            <ActivityIndicator
-              size="small"
-              color="#4F46E5"
-              style={{ paddingVertical: 16 }}
-            />
-          ) : null
+          activeQuestion ? null : (
+            <View style={styles.emptyHistory}>
+              <Text style={styles.emptyHistoryText}>Aún no hay preguntas anteriores</Text>
+            </View>
+          )
         }
       />
     </View>
   );
 }
 
-// ─── Estilos ──────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 12,
+    borderBottomWidth: 1, borderBottomColor: '#E5E7EB',
   },
   backBtn: { padding: 8 },
-  backBtnText: { color: '#4F46E5', fontWeight: '600', fontSize: 14 },
-  headerTitle: { fontWeight: '700', fontSize: 18, color: '#111827' },
+  backText: { fontSize: 20, color: '#4F46E5' },
+  headerTitle: { flex: 1, fontWeight: '700', fontSize: 17, color: '#111827', marginHorizontal: 8 },
+  inviteBtn: {
+    backgroundColor: '#EEF2FF', borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 7,
+  },
+  inviteBtnText: { color: '#4F46E5', fontWeight: '600', fontSize: 13 },
   list: { padding: 16, gap: 12 },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
+  activeCard: {
+    backgroundColor: '#4F46E5', borderRadius: 20, padding: 20,
+    marginBottom: 8,
+    shadowColor: '#4F46E5', shadowOpacity: 0.3, shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 }, elevation: 5,
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#EEF2FF',
-    justifyContent: 'center',
-    alignItems: 'center',
+  activePill: {
+    backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 4, alignSelf: 'flex-start', marginBottom: 12,
   },
-  avatarText: { color: '#4F46E5', fontWeight: '700', fontSize: 16 },
-  cardMeta: { flex: 1, marginLeft: 10 },
-  authorName: { fontWeight: '600', color: '#111827', fontSize: 14 },
-  cardDate: { color: '#9CA3AF', fontSize: 12, marginTop: 2 },
-  badge: {
-    backgroundColor: '#DCFCE7',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+  activePillText: { color: '#fff', fontSize: 12, fontWeight: '600' },
+  activeQuestion: { color: '#fff', fontSize: 18, fontWeight: '700', lineHeight: 26, marginBottom: 16 },
+  activeFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  activeMeta: { color: 'rgba(255,255,255,0.7)', fontSize: 13 },
+  answerBtn: {
+    backgroundColor: '#fff', borderRadius: 12,
+    paddingHorizontal: 18, paddingVertical: 10,
   },
-  badgeClosed: { backgroundColor: '#FEE2E2' },
-  badgeText: { fontSize: 11, fontWeight: '600', color: '#166534' },
-  questionText: { fontSize: 15, color: '#374151', lineHeight: 22 },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
+  answerBtnText: { color: '#4F46E5', fontWeight: '700', fontSize: 14 },
+  resultsBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 10,
   },
-  answerCount: { color: '#6B7280', fontSize: 13 },
-  answered: { color: '#059669', fontSize: 13, fontWeight: '600' },
-  offlineBanner: {
-    backgroundColor: '#FEF3C7',
-    padding: 10,
-    alignItems: 'center',
+  resultsBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  noQuestion: { alignItems: 'center', paddingVertical: 32, gap: 8 },
+  noQuestionIcon: { fontSize: 40 },
+  noQuestionText: { color: '#6B7280', fontSize: 15 },
+  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#374151', marginTop: 8, marginBottom: 4 },
+  historyCard: {
+    backgroundColor: '#fff', borderRadius: 14, padding: 14,
+    shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1,
   },
-  offlineText: { color: '#92400E', fontSize: 13 },
-  empty: { alignItems: 'center', marginTop: 60 },
-  emptyText: { color: '#9CA3AF', fontSize: 16 },
+  historyBadge: {
+    backgroundColor: '#DCFCE7', borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 8,
+  },
+  historyBadgeClosed: { backgroundColor: '#F3F4F6' },
+  historyBadgeText: { fontSize: 11, color: '#374151', fontWeight: '600' },
+  historyText: { fontSize: 14, color: '#374151', lineHeight: 20, marginBottom: 8 },
+  historyMeta: { fontSize: 12, color: '#9CA3AF' },
+  emptyHistory: { alignItems: 'center', marginTop: 40 },
+  emptyHistoryText: { color: '#9CA3AF', fontSize: 14 },
 });
