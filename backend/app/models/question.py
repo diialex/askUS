@@ -16,11 +16,10 @@ from sqlmodel import Field, SQLModel
 
 
 class QuestionCategory(str, Enum):
-    amigos  = "amigos"
-    trabajo = "trabajo"
-    pareja  = "pareja"
-    familia = "familia"
-    general = "general"
+    picante  = "picante"
+    incomoda = "incomoda"
+    graciosa = "graciosa"
+    general  = "general"
 
 
 # ── Global question pool ──────────────────────────────────────────────────────

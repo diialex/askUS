@@ -56,4 +56,10 @@ export const groupsApi = {
   /** Unirse por código de invitación */
   joinByCode: (code: string) =>
     apiClient.post<ApiResponse<Group>>(`/groups/join-by-code/${code}`),
+
+  /** Votar por la temática de la próxima pregunta (tras ver un anuncio) */
+  voteCategory: (groupId: string, category: string) =>
+    apiClient.post<ApiResponse<null>>(`/groups/${groupId}/vote-category`, null, {
+      params: { category },
+    }),
 };

@@ -28,8 +28,7 @@ export default function AnswerScreen() {
           groupsApi.getMembers(groupId, 1),
         ]);
         setGq(gqRes.data.data);
-        // Excluir al propio usuario de la lista
-        setMembers(membersRes.data.data.filter(m => m.user_id !== user?.id));
+        setMembers(membersRes.data.data);
       } finally {
         setIsLoading(false);
       }

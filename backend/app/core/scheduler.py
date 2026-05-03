@@ -72,8 +72,15 @@ async def send_daily_questions() -> None:
                     old_gq.status = "closed"
                     old_gq.closed_at = datetime.utcnow()
 
-                # 4. Elegir pregunta aleatoria del pool
-                question = random.choice(pool)
+                # 4. Elegir pregunta aleatoria del pool (respeta categoría votada si existe)
+                preferred_category = group.next_question_category
+                if preferred_category:
+                    filtered = [q for q in pool if q.category == preferred_category]
+                    question = random.choice(filtered) if filtered else random.choice(pool)
+                    # Limpiar la preferencia después de usarla
+                    group.next_question_category = None
+                else:
+                    question = random.choice(pool)
 
                 # 5. Crear la nueva GroupQuestion
                 gq = GroupQuestion(

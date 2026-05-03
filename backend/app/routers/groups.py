@@ -317,6 +317,46 @@ async def join_by_code(
     return ApiResponse(data=_serialize(group, True), message="¡Te uniste al grupo!")
 
 
+@router.post(
+    "/{group_id}/vote-category",
+    name="vote_category",
+    response_model=ApiResponse[None],
+    summary="Votar por la temática de la próxima pregunta (recompensa por anuncio)",
+)
+async def vote_category(
+    group_id: str,
+    user: CurrentUser,
+    session: AsyncSession = Depends(get_session),
+    category: str = "general",
+):
+    """
+    Guarda la categoría preferida para la próxima pregunta del grupo.
+    Se llama tras ver un anuncio recompensado en el cliente.
+    Categorías válidas: picante, incomoda, graciosa, general.
+    """
+    valid = {"picante", "incomoda", "graciosa", "general"}
+    if category not in valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Categoría no válida. Elige entre: {', '.join(valid)}",
+        )
+
+    result = await session.execute(select(Group).where(Group.uuid == group_id, Group.is_active == True))
+    group = result.scalar_one_or_none()
+    if not group:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Group not found")
+
+    if not await _is_member(session, group.uuid, str(user.uuid)):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not a member")
+
+    group.next_question_category = category
+    group.updated_at = datetime.utcnow()
+    await session.commit()
+
+    labels = {"picante": "🌶️ Picante", "incomoda": "😬 Incómoda", "graciosa": "😂 Graciosa", "general": "🎲 General"}
+    return ApiResponse(data=None, message=f"¡Temática guardada! Mañana la pregunta será {labels[category]}")
+
+
 @router.get("/{group_id}/members", name="list_members", response_model=dict, summary="List group members")
 async def list_members(
     group_id: str,

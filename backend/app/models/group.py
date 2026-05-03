@@ -23,6 +23,7 @@ class Group(SQLModel, table=True):
     created_by: str = Field(index=True)  # references users.uuid
     member_count: int = Field(default=1)
     invite_code: str = Field(default_factory=_gen_invite_code, index=True)
+    next_question_category: Optional[str] = Field(default=None)  # set by members voting with an ad
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: Optional[datetime] = Field(default=None)
