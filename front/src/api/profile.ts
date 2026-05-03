@@ -50,4 +50,11 @@ export const profileApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
+
+  /**
+   * DELETE /auth/me
+   * Elimina la cuenta y todos los datos del usuario.
+   */
+  deleteAccount: () =>
+    apiClient.delete<ApiResponse<null>>('/auth/me'),
 };

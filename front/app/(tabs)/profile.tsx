@@ -8,6 +8,7 @@ import {
   ScrollView,
   Image,
   Alert,
+  Modal,
 } from 'react-native';
 import { useState } from 'react';
 import { useAuth } from '@context/AuthContext';
@@ -22,6 +23,9 @@ export default function ProfileScreen() {
   const [name, setName] = useState(user?.name ?? '');
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSaveProfile = async () => {
     if (!name.trim()) return;
@@ -70,6 +74,20 @@ export default function ProfileScreen() {
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Salir', style: 'destructive', onPress: logout },
     ]);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'ELIMINAR') return;
+    setIsDeleting(true);
+    try {
+      await profileApi.deleteAccount();
+      setShowDeleteModal(false);
+      await logout();
+    } catch (err: any) {
+      Toast.show({ type: 'error', text1: 'Error', text2: err?.message ?? 'No se pudo eliminar la cuenta' });
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -130,7 +148,55 @@ export default function ProfileScreen() {
         <Text style={styles.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
 
+      {/* Eliminar cuenta */}
+      <TouchableOpacity style={styles.deleteBtn} onPress={() => setShowDeleteModal(true)}>
+        <Text style={styles.deleteText}>Eliminar cuenta</Text>
+      </TouchableOpacity>
+
       <Text style={styles.version}>AskUs v1.0.0</Text>
+
+      {/* Modal confirmación borrado */}
+      <Modal visible={showDeleteModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>⚠️ Eliminar cuenta</Text>
+            <Text style={styles.modalBody}>
+              Esta acción es <Text style={{ fontWeight: '700' }}>permanente</Text> y no se puede deshacer.
+              Se borrarán tus datos, respuestas y membresías.
+            </Text>
+            <Text style={styles.modalBody}>
+              Escribe <Text style={{ fontWeight: '700', color: '#EF4444' }}>ELIMINAR</Text> para confirmar:
+            </Text>
+            <TextInput
+              style={styles.deleteInput}
+              value={deleteConfirmText}
+              onChangeText={setDeleteConfirmText}
+              placeholder="ELIMINAR"
+              placeholderTextColor="#D1D5DB"
+              autoCapitalize="characters"
+            />
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.modalCancelBtn}
+                onPress={() => { setShowDeleteModal(false); setDeleteConfirmText(''); }}
+                disabled={isDeleting}
+              >
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalDeleteBtn, deleteConfirmText !== 'ELIMINAR' && styles.modalDeleteBtnDisabled]}
+                onPress={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'ELIMINAR' || isDeleting}
+              >
+                {isDeleting
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={styles.modalDeleteText}>Eliminar</Text>
+                }
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -210,4 +276,35 @@ const styles = StyleSheet.create({
   },
   logoutText: { color: '#EF4444', fontWeight: '700', fontSize: 15 },
   version: { color: '#D1D5DB', fontSize: 12 },
+  deleteBtn: {
+    width: '100%', paddingVertical: 14, alignItems: 'center', marginBottom: 24,
+  },
+  deleteText: { color: '#9CA3AF', fontSize: 13, textDecorationLine: 'underline' },
+  // Modal
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#fff', borderRadius: 20, padding: 24, width: '100%', gap: 12,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
+  modalBody: { fontSize: 14, color: '#6B7280', lineHeight: 20 },
+  deleteInput: {
+    borderWidth: 1.5, borderColor: '#EF4444', borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 16, fontWeight: '700', color: '#EF4444', textAlign: 'center', letterSpacing: 2,
+  },
+  modalActions: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  modalCancelBtn: {
+    flex: 1, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: '#F3F4F6', alignItems: 'center',
+  },
+  modalCancelText: { color: '#374151', fontWeight: '600', fontSize: 15 },
+  modalDeleteBtn: {
+    flex: 1, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: '#EF4444', alignItems: 'center',
+  },
+  modalDeleteBtnDisabled: { backgroundColor: '#FCA5A5' },
+  modalDeleteText: { color: '#fff', fontWeight: '700', fontSize: 15 },
 });

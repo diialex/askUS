@@ -13,14 +13,14 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export function useNotifications() {
+export function useNotifications(isAuthenticated = false) {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();
 
   useEffect(() => {
-    registerForPushNotifications();
+    registerForPushNotifications(isAuthenticated);
 
     // Listener cuando llega una notificación en foreground
     notificationListener.current = Notifications.addNotificationReceivedListener(
@@ -41,9 +41,9 @@ export function useNotifications() {
       notificationListener.current?.remove();
       responseListener.current?.remove();
     };
-  }, []);
+  }, [isAuthenticated]);
 
-  async function registerForPushNotifications() {
+  async function registerForPushNotifications(authenticated: boolean) {
     // Skip push notifications on web for now
     if (Platform.OS === 'web') {
       return;
@@ -72,14 +72,16 @@ export function useNotifications() {
     const token = tokenData.data;
     setExpoPushToken(token);
 
-    // Registra el token en tu API
-    try {
-      await profileApi.registerPushToken({
-        push_token: token,
-        platform: Platform.OS === 'ios' ? 'ios' : 'android',
-      });
-    } catch (e) {
-      console.warn('No se pudo registrar el push token en la API:', e);
+    // Registra el token en la API solo si el usuario está autenticado
+    if (authenticated) {
+      try {
+        await profileApi.registerPushToken({
+          push_token: token,
+          platform: Platform.OS === 'ios' ? 'ios' : 'android',
+        });
+      } catch (e) {
+        console.warn('No se pudo registrar el push token en la API:', e);
+      }
     }
 
     // Android requiere canal de notificaciones

@@ -7,9 +7,8 @@ import { AuthProvider } from '@context/AuthContext';
 import { useAuth } from '@context/AuthContext';
 import { useNotifications } from '@hooks/useNotifications';
 
-// Componente interno para inicializar notificaciones (necesita estar dentro del árbol)
-function NotificationsInit() {
-  useNotifications();
+function NotificationsInit({ isAuthenticated }: { isAuthenticated: boolean }) {
+  useNotifications(isAuthenticated);
   return null;
 }
 
@@ -24,7 +23,7 @@ function LoadingScreen() {
 
 // Componente interno que usa el contexto de Auth
 function RootLayoutContent() {
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -32,7 +31,7 @@ function RootLayoutContent() {
 
   return (
     <>
-      <NotificationsInit />
+      <NotificationsInit isAuthenticated={isAuthenticated} />
       <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
